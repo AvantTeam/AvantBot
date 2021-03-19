@@ -33,6 +33,7 @@ ext {
 task deploy(type: Jar) {
     archiveFileName = "AvantBot.jar"
 
+    from files(sourceSets.main.output.classesDirs)
     from configurations.runtimeClasspath.collect {
         it.isDirectory() || !it.name.endsWithAny(".zip", ".jar")
         ?   it
@@ -46,7 +47,7 @@ task deploy(type: Jar) {
 
 task run(type: JavaExec, dependsOn: classes) {
     main = project.mainClass
-    workingDir = "$buildDir/libs/"
+    workingDir = "$rootDir"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 

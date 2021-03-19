@@ -10,3 +10,6 @@ build/
 
 # IDE workspace
 .vscode/
+
+# Bot
+settings.json
