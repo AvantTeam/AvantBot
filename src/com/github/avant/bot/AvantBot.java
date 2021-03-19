@@ -11,6 +11,7 @@ import javax.security.auth.login.*;
 
 public class AvantBot {
     public static JDA jda;
+    public static Guild guild;
 
     public static Settings settings;
     public static Commands commands;
@@ -42,6 +43,8 @@ public class AvantBot {
             if(id != null) {
                 creator = jda.retrieveUserById(id, true).complete();
             }
+
+            guild = jda.getGuildById(782583108473978880L);
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
         } catch(InterruptedException e) {

@@ -14,7 +14,7 @@ public class Settings {
     private File file;
     private Map<String, Object> map;
 
-    private TypeReference<Map<String, Object>> ref = new TypeReference<>() {};
+    public static final TypeReference<Map<String, Object>> REF_MAP = new TypeReference<>() {};
 
     public Settings() {
         mapper = new ObjectMapper();
@@ -36,19 +36,22 @@ public class Settings {
 
             put("channels", channels);
         }
+        if(!has("warns")) {
+            put("warns", new LinkedHashMap<String, Map<String, Object>>());
+        }
     }
 
     private void read() {
         if(file.exists()) {
             try {
-                map.putAll(mapper.readValue(file, ref));
+                map.putAll(mapper.readValue(file, REF_MAP));
             } catch(Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void save() {
+    public void save() {
         try {
             mapper.writeValue(file, map);
         } catch(Exception e) {
