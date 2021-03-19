@@ -5,6 +5,7 @@ plugins {
 
 sourceSets.main {
     java.srcDirs = ["src/"];
+    resources.srcDirs = ["resources/"]
 }
 
 repositories {
@@ -12,6 +13,9 @@ repositories {
 }
 
 dependencies {
+    api "org.slf4j:slf4j-api:1.7.29"
+    api "org.slf4j:slf4j-log4j12:1.7.29"
+
     api "net.dv8tion:JDA:4.2.0_242"
     api "com.fasterxml.jackson.core:jackson-databind:2.11.1"
 }
