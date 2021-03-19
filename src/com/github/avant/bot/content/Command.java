@@ -3,72 +3,110 @@ package com.github.avant.bot.content;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 
+import java.awt.Color;
 import java.util.*;
 
 import static com.github.avant.bot.AvantBot.*;
 import static com.github.avant.bot.content.Command.CommandPermission.*;
 
-@SuppressWarnings("unchecked")
 public enum Command {
-    HELP("help", DEFAULT) {
-        @Override
-        public void execute(Message message, List<String> args) {
-            
-        }
-    },
-    
-    WARN("warn", ADMIN_ONLY) {
+    HELP("help", "Shows all server commands that you may use.", DEFAULT) {
         {
             params = List.of(
-                new CommandParam(false, "user"),
+                new CommandParam(true, "command")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            Guild guild = message.getGuild();
+            Member member = message.getMember();
+
+            EmbedBuilder builder = new EmbedBuilder()
+                .setTimestamp(message.getTimeCreated())
+                .setColor(INFO)
+                .setAuthor(member.getEffectiveName(), null, member.getUser().getEffectiveAvatarUrl())
+                .setFooter(self(guild).getEffectiveName() + "#" + prefix() + name, self().getEffectiveAvatarUrl());
+
+            if(args.size() > 0) {
+                Command command;
+                if((command = messages.commandExists(message, args.get(0))) != null) {
+                    builder
+                        .setTitle(prefix() + command.name)
+                        .setDescription(command.description);
+
+                    StringBuilder buf = new StringBuilder()
+                        .append("`")
+                        .append(prefix() + command.name)
+                        .append(" ");
+
+                    for(int i = 0; i < command.params.size(); i++) {
+                        buf.append(command.params.get(i));
+                        if(i < command.params.size() - 1) {
+                            buf.append(" ");
+                        }
+                    }
+
+                    buf.append("`");
+                    builder.addField("Usage:", buf.toString(), false);
+                }
+            } else {
+                builder
+                    .setTitle("Server commands")
+                    .setDescription("List of server commands that you may use.");
+
+                for(Command command : ALL) {
+                    if(command.permission.qualified(member)) {
+                        builder.addField(prefix() + command.name, command.description, false);
+                    }
+                }
+            }
+
+            message.getTextChannel()
+                .sendMessage(builder.build())
+                .queue();
+        }
+    },
+
+    WARN("warn", "Warns a server member.", ADMIN_ONLY) {
+        {
+            params = List.of(
+                new CommandParam(false, "member"),
                 new CommandParam(true, "reason...")
             );
         }
 
         @Override
         public void execute(Message message, List<String> args) {
-            TextChannel channel = message.getTextChannel();
-            Map<String, Map<String, Object>> warns = settings.get("warns", Map.class);
-
             String mention = args.get(0);
-            Member member = messages.parseMention(mention);
-            if(member == null) {
-                channel
-                    .sendMessage("'" + mention + "' does not seem to represent a server member.")
-                    .queue();
+            Member member;
+            if((member = messages.memberExists(message, mention)) != null) {
+                warns.warn(message, member, args.size() > 1 ? args.get(1) : null);
             }
-
-            String id = member.getId();
-            String reason = args.size() > 1 ? args.get(1) : "Unspecified";
-
-            if(!warns.containsKey(id)) {
-                warns.put(id, new LinkedHashMap<>());
-            }
-
-            Map<String, Object> map = warns.get(id);
-
-            int count = (int)map.getOrDefault("count", 0) + 1;
-            map.put("count", count);
-
-            var reasons = (List<String>)map.getOrDefault("reasons", new ArrayList<String>());
-            reasons.add(reason);
-            map.put("reasons", reasons);
-
-            settings.save();
-            channel
-                .sendMessage(mention + ", you have been warned *" + messages.warnMessage(count) + "* with a reason: " + reason)
-                .queue();
         }
     };
 
     public static final Command[] ALL = values();
 
+    public static Color INFO = new Color(130, 91, 215);
+    public static Color ERROR = new Color(215, 91, 91);
+
     public final String name;
+    public final String description;
+
     public final CommandPermission permission;
     public List<CommandParam> params = List.of();
 
-    Command(String name, CommandPermission permission) {
+    public static Command forName(String name) {
+        for(Command command : ALL) {
+            if(command.name.equals(name)) return command;
+        }
+        return null;
+    }
+
+    Command(String name, String description, CommandPermission permission) {
         this.name = name;
+        this.description = description;
         this.permission = permission;
     }
 
@@ -81,6 +119,11 @@ public enum Command {
         public CommandParam(boolean optional, String name) {
             this.optional = optional;
             this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return (optional ? '[' : '<') + name + (optional ? ']' : '>');
         }
     }
 

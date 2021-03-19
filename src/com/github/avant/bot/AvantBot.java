@@ -11,10 +11,10 @@ import javax.security.auth.login.*;
 
 public class AvantBot {
     public static JDA jda;
-    public static Guild guild;
 
     public static Settings settings;
     public static Commands commands;
+    public static Warns warns;
 
     public static Messages messages;
 
@@ -29,6 +29,7 @@ public class AvantBot {
         try {
             settings = new Settings();
             commands = new Commands();
+            warns = new Warns();
 
             jda = JDABuilder
                 .create(Set.of(GatewayIntent.values()))
@@ -43,8 +44,6 @@ public class AvantBot {
             if(id != null) {
                 creator = jda.retrieveUserById(id, true).complete();
             }
-
-            guild = jda.getGuildById(782583108473978880L);
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
         } catch(InterruptedException e) {
@@ -58,5 +57,37 @@ public class AvantBot {
 
     public static User creator() {
         return creator;
+    }
+
+    public static Member self(Guild guild) {
+        return guild.retrieveMember(jda.getSelfUser()).complete();
+    }
+
+    public static User self() {
+        return jda.getSelfUser();
+    }
+
+    public static User getUser(String id) {
+        try {
+            return jda.retrieveUserById(id, true).complete();
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
+    public static Member getMember(Guild guild, User user) {
+        try {
+            return guild.retrieveMember(user, true).complete();
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
+    public static Role getRole(Guild guild, String id) {
+        try {
+            return guild.getRoleById(id);
+        } catch(Exception e) {
+            return null;
+        }
     }
 }

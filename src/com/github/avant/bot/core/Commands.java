@@ -31,8 +31,18 @@ public class Commands {
             split.add(matcher.group().replace("\"", ""));
         }
 
-        Command command = Command.valueOf(split.remove(0).toUpperCase());
-        if(command.permission.qualified(member)) {
+        String name = split.remove(0);
+        Command command;
+
+        try {
+            command = Command.forName(name);
+        } catch(Exception e) {
+            command = null;
+        }
+
+        if(command == null) {
+            message.getTextChannel().sendMessage("Unknown command: '" + name + "'.");
+        } else if(command.permission.qualified(member)) {
             command.execute(message, split);
         }
     }
