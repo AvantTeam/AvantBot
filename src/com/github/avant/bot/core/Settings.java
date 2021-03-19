@@ -19,7 +19,7 @@ public class Settings {
     public Settings() {
         mapper = new ObjectMapper();
         file = new File("settings.json");
-        map = new HashMap<>();
+        map = new LinkedHashMap<>();
 
         setDefaults();
     }
@@ -29,6 +29,12 @@ public class Settings {
 
         if(!has("prefix")) {
             put("prefix", "av!");
+        }
+        if(!has("channels")) {
+            Map<String, String> channels = new LinkedHashMap<>();
+            channels.put("moderation", "785671460408655922");
+
+            put("channels", channels);
         }
     }
 
@@ -54,7 +60,7 @@ public class Settings {
         var prev = map.get(key);
         if(
             prev == null ||
-            ElementUtils.getClass(prev).isAssignableFrom(ElementUtils.getClass(value))
+            ElementUtils.getClass(value).isAssignableFrom(ElementUtils.getClass(prev))
         ) {
             map.put(key, value);
             save();
@@ -62,7 +68,7 @@ public class Settings {
             var cprev = ElementUtils.getClass(prev);
             var cval = ElementUtils.getClass(value);
 
-            throw new IllegalArgumentException("Setting '" + key + "' already exists with the type '" + cprev.getName() + "' and isn't assignable from '" + cval.getName() + "'.");
+            throw new IllegalArgumentException("Setting '" + key + "' already exists with the type '" + cprev.getName() + "' and isn't assignable to '" + cval.getName() + "'.");
         }
     }
 
@@ -70,13 +76,17 @@ public class Settings {
         var prev = map.get(key);
         if(
             prev != null &&
-            !ElementUtils.getClass(prev).isAssignableFrom(type)
+            !type.isAssignableFrom(ElementUtils.getClass(prev))
         ) {
             var cprev = ElementUtils.getClass(prev);
-            throw new IllegalArgumentException("Setting '" + key + "' already exists with the type '" + cprev.getName() + "' and isn't assignable from '" + type.getName() + "'.");
+            throw new IllegalArgumentException("Setting '" + key + "' already exists with the type '" + cprev.getName() + "' and isn't assignable to '" + type.getName() + "'.");
         } else {
             return (T)prev;
         }
+    }
+
+    public Object get(String key) {
+        return map.get(key);
     }
 
     public boolean has(String key) {
