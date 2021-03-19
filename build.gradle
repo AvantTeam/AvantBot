@@ -1,4 +1,5 @@
 plugins {
+    id "java"
     id "java-library"
 }
 
@@ -12,6 +13,7 @@ repositories {
 
 dependencies {
     api "net.dv8tion:JDA:4.2.0_242"
+    api "com.fasterxml.jackson.core:jackson-databind:2.11.1"
 }
 
 sourceCompatibility = 15
@@ -40,10 +42,11 @@ task deploy(type: Jar) {
 
 task run(type: JavaExec, dependsOn: classes) {
     main = project.mainClass
+    workingDir = "$buildDir/libs/"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 
-    if(project.hasProperty("token")) {
-        systemProperty "token", project.getProperty("token")
+    if(project.hasProperty("bot.token")) {
+        systemProperty "bot.token", project.getProperty("bot.token")
     }
 }
