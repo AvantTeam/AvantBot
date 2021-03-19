@@ -1,0 +1,49 @@
+plugins {
+    id "java-library"
+}
+
+sourceSets.main {
+    java.srcDirs = ["src/"];
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    api "net.dv8tion:JDA:4.2.0_242"
+}
+
+sourceCompatibility = 15
+targetCompatibility = 15
+
+version = "1.0-SNAPSHOT"
+group = "com.github.avant"
+
+ext {
+    mainClass = "com.github.avant.bot.AvantBot"
+}
+
+task deploy(type: Jar) {
+    archiveFileName = "AvantBot.jar"
+
+    from configurations.runtimeClasspath.collect {
+        it.isDirectory() || !it.name.endsWithAny(".zip", ".jar")
+        ?   it
+        :   zipTree(it)
+    }
+
+    manifest {
+        attributes "Main-Class": project.mainClass
+    }
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = project.mainClass
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+
+    if(project.hasProperty("token")) {
+        systemProperty "token", project.getProperty("token")
+    }
+}

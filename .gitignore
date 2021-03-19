@@ -1,0 +1,12 @@
+# Gradle
+.gradle/
+bin/
+build/
+
+# Java
+.settings/
+.project
+.classpath
+
+# IDE workspace
+.vscode/
