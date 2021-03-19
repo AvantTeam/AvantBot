@@ -49,4 +49,8 @@ task run(type: JavaExec, dependsOn: classes) {
     if(project.hasProperty("bot.token")) {
         systemProperty "bot.token", project.getProperty("bot.token")
     }
+
+    if(project.hasProperty("bot.creator")) {
+        systemProperty "bot.creator", project.getProperty("bot.creator")
+    }
 }
