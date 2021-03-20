@@ -115,18 +115,24 @@ public enum Command {
         }
     },
 
-    WARNINGS("warnings", "View a server member's warnings", ADMIN_ONLY) {
+    WARNINGS("warnings", "View a server member's or your warnings", ADMIN_ONLY) {
         {
             params = List.of(
-                new CommandParam(false, "member")
+                new CommandParam(true, "member")
             );
         }
 
         @Override
         public void execute(Message message, List<String> args) {
-            String mention = args.get(0);
+            String mention;
             Member offender = message.getMember();
             Member offended;
+
+            if(args.size() > 0) {
+                mention = args.get(0);
+            } else {
+                mention = offender.getAsMention();
+            }
 
             if((offended = messages.memberExists(message, mention)) != null) {
                 List<String> warnList = warns.warnings(offended);
@@ -143,7 +149,7 @@ public enum Command {
 
                     for(int i = 0; i < warnList.size(); i++) {
                         buf
-                            .append(String.format("**%d**: %s", i, warnList.get(i)))
+                            .append(String.format("**%d**: %s", i + 1, warnList.get(i)))
                             .append("\n");
                     }
 
@@ -160,7 +166,11 @@ public enum Command {
                         .queue();
                 } else {
                     message.getTextChannel()
-                        .sendMessage(String.format("%s has no warnings.", offended.getAsMention()))
+                        .sendMessage(String.format("%s no warnings.",
+                            args.size() > 0
+                            ?   String.format("%s has", offended.getAsMention())
+                            :   String.format("%s, you have", offended.getAsMention())
+                        ))
                         .queue();
                 }
             }
