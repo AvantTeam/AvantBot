@@ -115,6 +115,7 @@ public class AvantBot {
 
     protected static void init() {
         String last = (String)settings.remove("restart-message");
+        settings.save();
         if(last != null) {
             String[] split = last.split("-");
             jda.getGuildById(split[0])
