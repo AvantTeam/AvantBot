@@ -104,7 +104,10 @@ public class Settings {
     }
 
     public Object remove(String key) {
-        return map.remove(key);
+        var obj = map.remove(key);
+        save();
+
+        return obj;
     }
 
     public boolean has(String key) {

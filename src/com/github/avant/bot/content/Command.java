@@ -164,11 +164,11 @@ public enum Command {
     RESTART("restart", "Exits the bot with code 1; bot will be restarted by the auto-run script.", OWNER_ONLY) {
         @Override
         public void execute(Message message, List<String> args) {
-            message.getTextChannel()
+            Message res = message.getTextChannel()
                 .sendMessage("Restarting...")
                 .complete();
 
-            settings.put("restart-message", String.format("%s-%s-%s", message.getGuild().getId(), message.getTextChannel().getId(), message.getId()));
+            settings.put("restart-message", String.format("%s-%s-%s", res.getGuild().getId(), res.getTextChannel().getId(), res.getId()));
             exit();
         }
     };
