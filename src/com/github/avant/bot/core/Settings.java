@@ -103,6 +103,10 @@ public class Settings {
         return map.get(key);
     }
 
+    public Object remove(String key) {
+        return map.remove(key);
+    }
+
     public boolean has(String key) {
         return map.containsKey(key);
     }

@@ -56,6 +56,8 @@ public class AvantBot {
                     LOG.debug("Bot creator not found; double check the user ID.");
                 }
             }
+
+            init();
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
         } catch(InterruptedException e) {
@@ -103,19 +105,23 @@ public class AvantBot {
         }
     }
 
-    public static Emote getEmote(Guild guild, String id) {
-        try {
-            return guild.retrieveEmoteById(id).complete();
-        } catch(Exception e) {
-            return null;
-        }
-    }
-
     public static Member getOwner(Guild guild) {
         try {
             return guild.retrieveOwner(true).complete();
         } catch(Exception e) {
             return null;
+        }
+    }
+
+    protected static void init() {
+        String last = (String)settings.remove("restart-message");
+        if(last != null) {
+            String[] split = last.split("-");
+            jda.getGuildById(split[0])
+                .getTextChannelById(split[1])
+                .retrieveMessageById(split[2])
+                .flatMap(msg -> msg.reply("Successfully restarted."))
+                .queue();
         }
     }
 
