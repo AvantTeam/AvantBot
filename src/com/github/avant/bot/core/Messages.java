@@ -90,15 +90,17 @@ public class Messages extends ListenerAdapter {
     }
 
     public User parseMention(String mention) {
-        String strip = mention.substring(2, mention.length() - 1);
+        String strip = mention;
+        if(strip.startsWith("<@") && strip.endsWith(">")) strip = strip.substring(2, mention.length() - 1);
         if(strip.startsWith("!")) strip = strip.substring(1);
 
         return getUser(strip);
     }
 
     public Role parseRole(Guild guild, String role) {
-        String strip = role.substring(2, role.length() - 1);
-        if(strip.startsWith("&")) strip = strip.substring(1);
+        String strip = role;
+        if(strip.startsWith("<&") && strip.endsWith(">")) strip = strip.substring(2, role.length() - 1);
+        if(strip.startsWith("!")) strip = strip.substring(1);
 
         return getRole(guild, strip);
     }

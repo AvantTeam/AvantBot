@@ -130,33 +130,39 @@ public enum Command {
 
             if((offended = messages.memberExists(message, mention)) != null) {
                 List<String> warnList = warns.warnings(offended);
-                EmbedBuilder builder = new EmbedBuilder()
-                    .setTitle(String.format("Warnings for %s", offended.getAsMention()))
-                    .setTimestamp(message.getTimeCreated())
-                    .setColor(INFO)
-                    .setAuthor(offender.getEffectiveName(), null, offender.getUser().getEffectiveAvatarUrl())
-                    .setThumbnail(offended.getUser().getEffectiveAvatarUrl())
-                    .setFooter(self(message.getGuild()).getEffectiveName() + "#" + prefix() + name, self().getEffectiveAvatarUrl());
+                if(warnList.size() > 0) {
+                    EmbedBuilder builder = new EmbedBuilder()
+                        .setTitle(String.format("Warnings for %s#%s", offended.getEffectiveName(), offended.getUser().getDiscriminator()))
+                        .setTimestamp(message.getTimeCreated())
+                        .setColor(INFO)
+                        .setAuthor(offender.getEffectiveName(), null, offender.getUser().getEffectiveAvatarUrl())
+                        .setThumbnail(offended.getUser().getEffectiveAvatarUrl())
+                        .setFooter(self(message.getGuild()).getEffectiveName() + "#" + prefix() + name, self().getEffectiveAvatarUrl());
 
-                StringBuilder buf = new StringBuilder();
+                    StringBuilder buf = new StringBuilder();
 
-                for(int i = 0; i < warnList.size(); i++) {
-                    buf
-                        .append(String.format("**%d**: %s", i, warnList.get(i)))
-                        .append("\n");
+                    for(int i = 0; i < warnList.size(); i++) {
+                        buf
+                            .append(String.format("**%d**: %s", i, warnList.get(i)))
+                            .append("\n");
+                    }
+
+                    message.getTextChannel()
+                        .sendMessage(builder
+                            .addField(String.format("%s#%s has %d warnings:",
+                                offended.getEffectiveName(),
+                                offended.getUser().getDiscriminator(),
+                                warnList.size()
+                            ),
+                            buf.toString(), false)
+                            .build()
+                        )
+                        .queue();
+                } else {
+                    message.getTextChannel()
+                        .sendMessage(String.format("%s has no warnings.", offended.getAsMention()))
+                        .queue();
                 }
-
-                message.getTextChannel()
-                    .sendMessage(builder
-                        .addField(String.format("%s#%s has %d warnings:",
-                            offended.getEffectiveName(),
-                            offended.getUser().getDiscriminator(),
-                            warnList.size()
-                        ),
-                        buf.toString(), false)
-                        .build()
-                    )
-                    .queue();
             }
         }
     },
