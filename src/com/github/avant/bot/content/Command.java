@@ -81,7 +81,36 @@ public enum Command {
             String mention = args.get(0);
             Member member;
             if((member = messages.memberExists(message, mention)) != null) {
-                warns.warn(message, member, args.size() > 1 ? args.get(1) : null);
+                if(member.getIdLong() == message.getAuthor().getIdLong()) {
+                    message.getTextChannel()
+                        .sendMessage("Can't warn yourself.")
+                        .queue();
+                } else {
+                    warns.warn(message, member, args.size() > 1 ? args.get(1) : null);
+                }
+            }
+        }
+    },
+
+    CLEARWARN("clearwarn", "Clears a server member's warnings", ADMIN_ONLY) {
+        {
+            params = List.of(
+                new CommandParam(false, "member")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            String mention = args.get(0);
+            Member member;
+            if((member = messages.memberExists(message, mention)) != null) {
+                if(member.getIdLong() == message.getAuthor().getIdLong()) {
+                    message.getTextChannel()
+                        .sendMessage("Can't clearwarn yourself.")
+                        .queue();
+                } else {
+                    warns.clearwarn(message, member);
+                }
             }
         }
     },

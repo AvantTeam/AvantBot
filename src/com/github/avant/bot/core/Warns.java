@@ -53,4 +53,36 @@ public class Warns {
                 .queue();
         }
     }
+
+    public void clearwarn(Message message, Member member) {
+        Guild guild = member.getGuild();
+
+        Map<String, Map<String, Map<String, Object>>> warns = settings.get("warns", Map.class);
+        if(!warns.containsKey(guild.getId())) {
+            warns.put(guild.getId(), new LinkedHashMap<>());
+        }
+
+        Map<String, Map<String, Object>> guildMap = warns.get(guild.getId());
+        if(!guildMap.containsKey(member.getId())) {
+            guildMap.put(member.getId(), new LinkedHashMap<>());
+        }
+
+        Map<String, Object> map = guildMap.get(member.getId());
+
+        var count = (int)map.getOrDefault("count", 0);
+        map.put("count", count);
+
+        var reasons = (List<String>)map.getOrDefault("reasons", new ArrayList<String>());
+        reasons.clear();
+        map.put("reasons", reasons);
+
+        settings.save();
+        LOG.info("'{}#{}'s warnings have been cleared.", member.getEffectiveName(), member.getUser().getDiscriminator());
+
+        if(message != null) {
+            message.getTextChannel()
+                .sendMessage(String.format("%s, your warnings have been cleared.", member.getAsMention()))
+                .queue();
+        }
+    }
 }
