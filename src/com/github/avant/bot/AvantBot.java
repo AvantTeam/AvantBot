@@ -30,7 +30,7 @@ public class AvantBot {
             throw new IllegalStateException("Property 'bot.token' not found.");
         }
 
-        LOG.debug("Found bot token.");
+        LOG.info("Found bot token.");
         try {
             settings = new Settings();
             commands = new Commands();
@@ -50,7 +50,7 @@ public class AvantBot {
                 LOG.debug("Creator ID: {}.", id);
                 creator = getUser(id);
                 if(creator != null) {
-                    LOG.debug("Found creator: '{}#{}'.", creator.getName(), creator.getDiscriminator());
+                    LOG.info("Found creator: '{}#{}'.", creator.getName(), creator.getDiscriminator());
                 } else {
                     LOG.debug("Bot creator not found; double check the user ID.");
                 }
@@ -100,5 +100,14 @@ public class AvantBot {
         } catch(Exception e) {
             return null;
         }
+    }
+
+    public static void exit() {
+        LOG.info("Shutting the JDA instance down.");
+
+        jda.shutdown();
+        settings.save();
+
+        System.exit(1);
     }
 }

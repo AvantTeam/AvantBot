@@ -84,6 +84,13 @@ public enum Command {
                 warns.warn(message, member, args.size() > 1 ? args.get(1) : null);
             }
         }
+    },
+
+    RESTART("restart", "Exits the bot with code 1; bot will be restarted by the auto-run script.", OWNER_ONLY) {
+        @Override
+        public void execute(Message message, List<String> args) {
+            exit();
+        }
     };
 
     public static final Command[] ALL = values();
@@ -129,26 +136,32 @@ public enum Command {
 
     public enum CommandPermission {
         /** Can be used for all guild members. */
-        DEFAULT(null),
+        DEFAULT {
+            @Override
+            public boolean qualified(Member member) {
+                return true;
+            }
+        },
 
         /** Can only be used by administrators. */
-        ADMIN_ONLY(Permission.ADMINISTRATOR),
+        ADMIN_ONLY {
+            @Override
+            public boolean qualified(Member member) {
+                return member.hasPermission(Permission.ADMINISTRATOR);
+            }
+        },
 
         /** Can only be used by server owner or bot creator. */
-        OWNER_ONLY(Permission.MANAGE_SERVER);
+        OWNER_ONLY {
+            @Override
+            public boolean qualified(Member member) {
+                User user = member.getUser();
+                return
+                    user.getIdLong() == creator().getIdLong() ||
+                    member.getGuild().retrieveOwner(true).complete().getUser().getIdLong() == user.getIdLong();
+            }
+        };
 
-        public final Permission permission;
-
-        CommandPermission(Permission permission) {
-            this.permission = permission;
-        }
-
-        public boolean qualified(Member member) {
-            return
-                member.getUser().getIdLong() == creator().getIdLong() ||
-                permission != null
-                ?   member.hasPermission(permission)
-                :   true;
-        }
+        public abstract boolean qualified(Member member);
     }
 }
