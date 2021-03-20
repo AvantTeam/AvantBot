@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Keep running the program until successful exit or force exit
+while [ true ]; do
+    # Pull necessary changes
+    git pull
+
+    # Build the .jar file
+    ./gradlew -Dorg.gradle.daemon=false deploy
+
+    # Run the .jar file
+    java -Dbot.token=$AVANT_BOT_TOKEN -Dbot.creator=$DISCORD_ID -jar build/libs/AvantBot.jar
+
+    # If successfully or forcefully exited, stop
+    excode=$?
+    if [ $excode -eq 0 ] || [ $excode -eq 130 ]; then
+        exit 0
+    fi
+done
