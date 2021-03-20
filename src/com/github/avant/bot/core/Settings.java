@@ -2,6 +2,8 @@ package com.github.avant.bot.core;
 
 import com.github.avant.bot.utils.*;
 
+import org.slf4j.*;
+
 import java.io.*;
 import java.util.*;
 
@@ -10,25 +12,31 @@ import com.fasterxml.jackson.databind.*;
 
 @SuppressWarnings("unchecked")
 public class Settings {
+    private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
+
+    public static final TypeReference<Map<String, Object>> REF_MAP = new TypeReference<>() {};
+
     private ObjectMapper mapper;
     private File file;
     private Map<String, Object> map;
 
-    public static final TypeReference<Map<String, Object>> REF_MAP = new TypeReference<>() {};
-
     public Settings() {
+        LOG.debug("Initializing bot settings.");
+
         mapper = new ObjectMapper();
         file = new File("settings.json");
         map = new LinkedHashMap<>();
 
         setDefaults();
+
+        LOG.debug("Initialized bot settings.");
     }
 
     private void setDefaults() {
         read();
 
         if(!has("prefix")) {
-            put("prefix", "av!");
+            put("prefix", "!");
         }
         if(!has("channels")) {
             Map<String, String> channels = new LinkedHashMap<>();
@@ -43,11 +51,14 @@ public class Settings {
 
     private void read() {
         if(file.exists()) {
+            LOG.debug("Found bot settings file; trying to read and parse.");
             try {
                 map.putAll(mapper.readValue(file, REF_MAP));
             } catch(Exception e) {
                 throw new RuntimeException(e);
             }
+        } else {
+            LOG.debug("Bot settings file does not exist; automatically setting up default values.");
         }
     }
 

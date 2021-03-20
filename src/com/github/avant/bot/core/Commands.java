@@ -2,6 +2,8 @@ package com.github.avant.bot.core;
 
 import com.github.avant.bot.content.*;
 
+import org.slf4j.*;
+
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.*;
@@ -10,7 +12,13 @@ import java.util.regex.*;
 import static com.github.avant.bot.AvantBot.*;
 
 public class Commands {
-    private Pattern splitter = Pattern.compile("(?:\".+\")|(?:[^\\s]+)");
+    private static final Logger LOG = LoggerFactory.getLogger(Commands.class);
+
+    private final Pattern splitter = Pattern.compile("(?:\".+\")|(?:[^\\s]+)");
+
+    public Commands() {
+        LOG.debug("Initialized command handler.");
+    }
 
     public void handle(Message message, Member member) {
         String text = message.getContentRaw();

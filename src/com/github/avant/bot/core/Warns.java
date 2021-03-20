@@ -4,10 +4,18 @@ import net.dv8tion.jda.api.entities.*;
 
 import java.util.*;
 
+import org.slf4j.*;
+
 import static com.github.avant.bot.AvantBot.*;
 
 @SuppressWarnings("unchecked")
 public class Warns {
+    private static final Logger LOG = LoggerFactory.getLogger(Warns.class);
+
+    public Warns() {
+        LOG.debug("Initialized member warnings utility.");
+    }
+
     public void warn(Message message, Member member, String reason) {
         Guild guild = member.getGuild();
 
@@ -31,6 +39,7 @@ public class Warns {
         map.put("reasons", reasons);
 
         settings.save();
+        LOG.info("'{}#{}' now has {} warning{}.", member.getEffectiveName(), member.getUser().getDiscriminator(), count, count == 1 ? "" : "s");
 
         if(message != null) {
             message.getTextChannel()

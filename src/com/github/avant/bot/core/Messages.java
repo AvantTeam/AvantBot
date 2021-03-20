@@ -2,6 +2,8 @@ package com.github.avant.bot.core;
 
 import com.github.avant.bot.content.*;
 
+import org.slf4j.*;
+
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.*;
 import net.dv8tion.jda.api.hooks.*;
@@ -9,13 +11,21 @@ import net.dv8tion.jda.api.hooks.*;
 import static com.github.avant.bot.AvantBot.*;
 
 public class Messages extends ListenerAdapter {
+    private static final Logger LOG = LoggerFactory.getLogger(Messages.class);
+
     private final String[] warns = { "once", "twice", "thrice", "four times", "too many times" };
+
+    public Messages() {
+        LOG.debug("Initialized message listener.");
+    }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         Message msg = event.getMessage();
-        if(msg.getAuthor().isBot()) return;
-        
+        Member member = event.getMember();
+        if(member.getUser().isBot()) return;
+
+        LOG.debug("'{}#{}': {}", member.getEffectiveName(), member.getUser().getDiscriminator(), msg.getContentDisplay());
         commands.handle(msg, event.getMember());
     }
 

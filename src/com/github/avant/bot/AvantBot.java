@@ -2,6 +2,8 @@ package com.github.avant.bot;
 
 import com.github.avant.bot.core.*;
 
+import org.slf4j.*;
+
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
@@ -10,6 +12,8 @@ import java.util.*;
 import javax.security.auth.login.*;
 
 public class AvantBot {
+    private static final Logger LOG = LoggerFactory.getLogger(AvantBot.class);
+
     public static JDA jda;
 
     public static Settings settings;
@@ -26,6 +30,7 @@ public class AvantBot {
             throw new IllegalStateException("Property 'bot.token' not found.");
         }
 
+        LOG.debug("Found bot token.");
         try {
             settings = new Settings();
             commands = new Commands();
@@ -42,7 +47,13 @@ public class AvantBot {
 
             String id = System.getProperty("bot.creator");
             if(id != null) {
-                creator = jda.retrieveUserById(id, true).complete();
+                LOG.debug("Creator ID: {}.", id);
+                creator = getUser(id);
+                if(creator != null) {
+                    LOG.debug("Found creator: '{}#{}'.", creator.getName(), creator.getDiscriminator());
+                } else {
+                    LOG.debug("Bot creator not found; double check the user ID.");
+                }
             }
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
