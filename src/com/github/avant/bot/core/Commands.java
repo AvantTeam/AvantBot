@@ -41,17 +41,15 @@ public class Commands {
 
         String name = split.remove(0);
         Command command;
-
-        try {
-            command = Command.forName(name);
-        } catch(Exception e) {
-            command = null;
-        }
-
-        if(command == null) {
-            message.getTextChannel().sendMessage("Unknown command: '" + name + "'.");
-        } else if(command.permission.qualified(member)) {
-            command.execute(message, split);
+        if((command = messages.commandExists(message, name)) != null) {
+            int size = command.minArgSize();
+            if(split.size() < size) {
+                message.getTextChannel()
+                    .sendMessage(String.format("Insufficient amount or arguments *(supplied: %d, required: %d)*.", split.size(), size))
+                    .queue();
+            } else {
+                command.execute(message, split);
+            }
         }
     }
 }

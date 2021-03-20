@@ -115,6 +115,19 @@ public enum Command {
         }
     },
 
+    WARNINGS("warnings", "View a server member's warnings", ADMIN_ONLY) {
+        {
+            params = List.of(
+                new CommandParam(false, "member")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            
+        }
+    },
+
     RESTART("restart", "Exits the bot with code 1; bot will be restarted by the auto-run script.", OWNER_ONLY) {
         @Override
         public void execute(Message message, List<String> args) {
@@ -133,6 +146,8 @@ public enum Command {
     public final CommandPermission permission;
     public List<CommandParam> params = List.of();
 
+    private int minArgSize = -1;
+
     public static Command forName(String name) {
         for(Command command : ALL) {
             if(command.name.equals(name)) return command;
@@ -147,6 +162,14 @@ public enum Command {
     }
 
     public abstract void execute(Message message, List<String> args);
+
+    public int minArgSize() {
+        if(minArgSize < 0) {
+            minArgSize = 0;
+            params.forEach(e -> minArgSize++);
+        }
+        return minArgSize;
+    }
 
     public class CommandParam {
         public final boolean optional;
@@ -185,9 +208,15 @@ public enum Command {
             @Override
             public boolean qualified(Member member) {
                 User user = member.getUser();
+                Member owner = getOwner(member.getGuild());
+
                 return
                     user.getIdLong() == creator().getIdLong() ||
-                    member.getGuild().retrieveOwner(true).complete().getUser().getIdLong() == user.getIdLong();
+                    (
+                        owner != null
+                        ?   owner.getIdLong() == user.getIdLong()
+                        :   false
+                    );
             }
         };
 

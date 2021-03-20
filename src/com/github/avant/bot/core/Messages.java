@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.*;
 import net.dv8tion.jda.api.hooks.*;
 
+import java.io.*;
+
 import static com.github.avant.bot.AvantBot.*;
 
 public class Messages extends ListenerAdapter {
@@ -23,10 +25,34 @@ public class Messages extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         Message msg = event.getMessage();
         Member member = event.getMember();
-        if(member.getUser().isBot()) return;
 
-        LOG.debug("'{}#{}': {}", member.getEffectiveName(), member.getUser().getDiscriminator(), msg.getContentDisplay());
-        commands.handle(msg, event.getMember());
+        if(member.getUser().isBot() || msg.getChannel() instanceof PrivateChannel) {
+            return;
+        }
+
+        LOG.debug("{}#{} in #{}: {}", member.getEffectiveName(), member.getUser().getDiscriminator(), event.getTextChannel().getName(), msg.getContentDisplay());
+
+        try {
+            commands.handle(msg, event.getMember());
+        } catch(Throwable t) {
+            LOG.error("An error occurred", t);
+
+            if(member.getIdLong() == creator().getIdLong()) {
+                member.getUser().openPrivateChannel()
+                    .flatMap(channel -> {
+                        StringWriter writer = new StringWriter();
+                        PrintWriter print = new PrintWriter(writer);
+
+                        t.printStackTrace(print);
+                        return channel.sendMessage(String.format("An error occured: ```\n%s```", writer.toString()));
+                    })
+                    .queue();
+            } else {
+                event.getTextChannel()
+                    .sendMessage("An error occured.")
+                    .queue();
+            }
+        }
     }
 
     public Command commandExists(Message message, String name) {

@@ -38,10 +38,11 @@ public class AvantBot {
 
             jda = JDABuilder
                 .create(Set.of(GatewayIntent.values()))
+                .setToken(token)
                 .addEventListeners(
                     messages = new Messages()
                 )
-                .setToken(token)
+                .setBulkDeleteSplittingEnabled(false)
                 .build()
                 .awaitReady();
 
@@ -97,6 +98,14 @@ public class AvantBot {
     public static Role getRole(Guild guild, String id) {
         try {
             return guild.getRoleById(id);
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
+    public static Member getOwner(Guild guild) {
+        try {
+            return guild.retrieveOwner(true).complete();
         } catch(Exception e) {
             return null;
         }

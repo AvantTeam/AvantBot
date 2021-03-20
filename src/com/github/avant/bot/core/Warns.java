@@ -39,7 +39,7 @@ public class Warns {
         map.put("reasons", reasons);
 
         settings.save();
-        LOG.info("'{}#{}' now has {} warning{}.", member.getEffectiveName(), member.getUser().getDiscriminator(), count, count == 1 ? "" : "s");
+        LOG.info("{}#{} now has {} warning{}.", member.getEffectiveName(), member.getUser().getDiscriminator(), count, count == 1 ? "" : "s");
 
         if(message != null) {
             message.getTextChannel()
@@ -77,7 +77,7 @@ public class Warns {
         map.put("reasons", reasons);
 
         settings.save();
-        LOG.info("'{}#{}'s warnings have been cleared.", member.getEffectiveName(), member.getUser().getDiscriminator());
+        LOG.info("{}#{}'s warnings have been cleared.", member.getEffectiveName(), member.getUser().getDiscriminator());
 
         if(message != null) {
             message.getTextChannel()
