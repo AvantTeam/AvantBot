@@ -34,7 +34,10 @@ public class Messages extends ListenerAdapter {
         Member member = message.getMember();
 
         if(command == null || !command.permission.qualified(member)) {
-            message.getTextChannel().sendMessage(String.format("%s, command '%s' does not exist or you do not have permission to use it.", member.getAsMention(), name));
+            message.getTextChannel()
+                .sendMessage(String.format("%s, command '%s' does not exist or you do not have permission to use it.", member.getAsMention(), name))
+                .queue();
+
             return null;
         } else {
             return command;
@@ -46,7 +49,10 @@ public class Messages extends ListenerAdapter {
         Member member = message.getMember();
 
         if(target == null) {
-            message.getTextChannel().sendMessage(String.format("%s, '%s' does not seem to represent a server member.", member.getAsMention(), mention));
+            message.getTextChannel()
+                .sendMessage(String.format("%s, '%s' does not seem to represent a server member.", member.getAsMention(), mention))
+                .queue();
+
             return null;
         } else {
             return target;
