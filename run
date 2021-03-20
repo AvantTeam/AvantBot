@@ -3,7 +3,7 @@
 # Keep running the program until successful exit or force exit
 while [ true ]; do
     # Pull necessary changes
-    git pull
+    git pull --rebase --no-edit
 
     # Build the .jar file
     ./gradlew -Dorg.gradle.daemon=false deploy
