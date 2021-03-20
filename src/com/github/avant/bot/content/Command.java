@@ -204,7 +204,9 @@ public enum Command {
     public int minArgSize() {
         if(minArgSize < 0) {
             minArgSize = 0;
-            params.forEach(e -> minArgSize++);
+            for(CommandParam param : params) {
+                if(!param.optional) minArgSize++;
+            }
         }
         return minArgSize;
     }
