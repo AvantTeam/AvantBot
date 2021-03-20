@@ -103,6 +103,14 @@ public class AvantBot {
         }
     }
 
+    public static Emote getEmote(Guild guild, String id) {
+        try {
+            return guild.retrieveEmoteById(id).complete();
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
     public static Member getOwner(Guild guild) {
         try {
             return guild.retrieveOwner(true).complete();

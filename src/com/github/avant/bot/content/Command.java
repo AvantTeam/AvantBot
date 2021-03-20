@@ -164,6 +164,10 @@ public enum Command {
     RESTART("restart", "Exits the bot with code 1; bot will be restarted by the auto-run script.", OWNER_ONLY) {
         @Override
         public void execute(Message message, List<String> args) {
+            message
+                .addReaction(getEmote(message.getGuild(), "822761758283399169"))
+                .complete();
+
             exit();
         }
     };
