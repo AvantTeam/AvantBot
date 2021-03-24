@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.*;
 import java.awt.Color;
 import java.io.*;
 import java.util.*;
+import java.util.zip.*;
 
 import static com.github.avant.bot.AvantBot.*;
 import static com.github.avant.bot.content.Command.CommandPermission.*;
@@ -82,48 +83,75 @@ public enum Command {
             TextChannel channel = message.getTextChannel();
 
             String name = args.get(0);
-            String cname;
+            String nameRaw;
             String content = args.get(1);
 
             if(!name.endsWith(".java")) {
-                cname = name + ".class";
-                name += ".java";
+                nameRaw = name;
+                name = nameRaw + ".java";
             } else {
-                cname = name.substring(0, name.lastIndexOf(".java")) + ".class";
+                nameRaw = name.substring(0, name.lastIndexOf(".java"));
             }
 
             content.replaceFirst("package (.|\\s)+;", "");
 
-            File file = new File(CLASSES_DIR.getAbsolutePath(), name);
+            File parent = new File(CLASSES_DIR.getAbsolutePath(), nameRaw);
+            parent.mkdirs();
+            File file = new File(parent.getAbsolutePath(), name);
+
             try {
                 var writer = new OutputStreamWriter(new FileOutputStream(file, false));
                 writer.write(content);
                 writer.close();
 
-                String[] names = {name, cname};
-                File compiled = new File(CLASSES_DIR.getAbsolutePath(), names[1]);
-
+                String[] n = {name, nameRaw};
                 channel
                     .sendMessage("Compiling...")
                     .flatMap(msg -> {
                         try {
                             Process process = Runtime.getRuntime().exec(new String[] {
-                                "javac", "--release", "8", names[0]
-                            }, null, CLASSES_DIR);
+                                "javac", "--release", "8", n[0]
+                            }, null, parent);
 
                             int excode = process.waitFor();
                             return switch(excode) {
-                                case 0 -> channel
-                                    .sendMessage("Here's your compiled `.class` file!")
-                                    .addFile(compiled)
-                                    .flatMap(m -> {
-                                        return channel.sendMessage(
-                                            "Make sure you have Java 8 or higher installed. " +
-                                            "Open your command line, " +
-                                            "`cd` to where the compiled file is located, " +
-                                            "then run `java <filename>`."
-                                        );
-                                    });
+                                case 0 -> 
+                                    channel
+                                        .sendMessage("Done compiling.")
+                                        .flatMap(m -> {
+                                            File zipfile = new File(parent.getAbsolutePath(), nameRaw + ".zip");
+                                            try(ZipOutputStream stream = new ZipOutputStream(new FileOutputStream(zipfile))) {
+                                                for(File src : parent.listFiles()) {
+                                                    if(!src.getName().endsWith(".class")) continue;
+
+                                                    try(FileInputStream in = new FileInputStream(src)) {
+                                                        ZipEntry zipEntry = new ZipEntry(src.getName());
+                                                        stream.putNextEntry(zipEntry);
+
+                                                        byte[] bytes = new byte[1024];
+                                                        int length;
+                                                        while((length = in.read(bytes)) >= 0) {
+                                                            stream.write(bytes, 0, length);
+                                                        }
+                                                    }
+                                                }
+                                            } catch(Throwable t) {
+                                                return messages.error(message, t);
+                                            }
+
+                                            return channel
+                                                .sendMessage("Here's your compiled `.class` file in a zipped file!")
+                                                .addFile(zipfile);
+                                        })
+                                        .flatMap(m -> {
+                                            return channel.sendMessage(String.format(
+                                                "Make sure you have Java 8 or higher installed. " +
+                                                "Open your command line, " +
+                                                "`cd` to where the compiled file is located, " +
+                                                "then run `java %s`.",
+                                                n[1]
+                                            ));
+                                        });
 
                                 default -> channel.sendMessage(String.format("Error compiling: `javac` exited with code `%d`.", excode));
                             };
@@ -133,7 +161,9 @@ public enum Command {
                     })
                     .map(msg -> {
                         file.delete();
-                        compiled.delete();
+
+                        for(File fi : parent.listFiles()) fi.delete();
+                        parent.delete();
 
                         return null;
                     })
