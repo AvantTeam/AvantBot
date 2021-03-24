@@ -7,6 +7,7 @@ import org.slf4j.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.*;
 import net.dv8tion.jda.api.hooks.*;
+import net.dv8tion.jda.api.requests.*;
 
 import java.io.*;
 
@@ -24,34 +25,38 @@ public class Messages extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         Message msg = event.getMessage();
-        Member member = event.getMember();
-
-        if(member.getUser().isBot() || msg.getChannel() instanceof PrivateChannel) {
+        if(msg.getChannel() instanceof PrivateChannel || msg.getAuthor().isBot()) {
             return;
         }
 
-        LOG.debug("{}#{} in #{}: {}", member.getEffectiveName(), member.getUser().getDiscriminator(), event.getTextChannel().getName(), msg.getContentDisplay());
+        Member member = event.getMember();
 
+        LOG.debug("{}#{} in #{}: {}", member.getEffectiveName(), member.getUser().getDiscriminator(), event.getTextChannel().getName(), msg.getContentDisplay());
         try {
             commands.handle(msg, event.getMember());
         } catch(Throwable t) {
-            LOG.error("An error occurred", t);
+            error(msg, t).queue();
+        }
+    }
 
-            if(member.getIdLong() == creator().getIdLong()) {
-                member.getUser().openPrivateChannel()
-                    .flatMap(channel -> {
-                        StringWriter writer = new StringWriter();
-                        PrintWriter print = new PrintWriter(writer);
+    public RestAction<Message> error(Message message, Throwable t) {
+        LOG.error("An error occurred!", t);
 
-                        t.printStackTrace(print);
-                        return channel.sendMessage(String.format("An error occured: ```\n%s```", writer.toString()));
-                    })
-                    .queue();
-            } else {
-                event.getTextChannel()
-                    .sendMessage("An error occured.")
-                    .queue();
-            }
+        User user = message.getAuthor();
+        var act = message.getTextChannel().sendMessage("An error occured.");
+
+        if(user.getIdLong() == creator().getIdLong()) {
+            act.queue();
+            return user.openPrivateChannel()
+                .flatMap(channel -> {
+                    StringWriter writer = new StringWriter();
+                    PrintWriter print = new PrintWriter(writer);
+
+                    t.printStackTrace(print);
+                    return channel.sendMessage(String.format("An error occured: ```\n%s```", writer.toString()));
+                });
+        } else {
+            return act;
         }
     }
 

@@ -83,7 +83,7 @@ public enum Command {
 
             String name = args.get(0);
             String cname;
-            String content = args.get(1).trim();
+            String content = args.get(1);
 
             if(!name.endsWith(".java")) {
                 cname = name + ".class";
@@ -92,7 +92,7 @@ public enum Command {
                 cname = name.substring(0, name.lastIndexOf(".java")) + ".class";
             }
 
-            content.replaceAll("package (.|\\s)+;", "");
+            content.replaceFirst("package (.|\\s)+;", "");
 
             File file = new File(CLASSES_DIR.getAbsolutePath(), name);
             try {
@@ -101,6 +101,8 @@ public enum Command {
                 writer.close();
 
                 String[] names = {name, cname};
+                File compiled = new File(CLASSES_DIR.getAbsolutePath(), names[1]);
+
                 channel
                     .sendMessage("Compiling...")
                     .flatMap(msg -> {
@@ -110,15 +112,11 @@ public enum Command {
                             }, null, CLASSES_DIR);
 
                             int excode = process.waitFor();
-                            file.delete();
-                            File compiled = new File(CLASSES_DIR.getAbsolutePath(), names[1]);
-
                             return switch(excode) {
                                 case 0 -> channel
                                     .sendMessage("Here's your compiled `.class` file!")
                                     .addFile(compiled)
                                     .flatMap(m -> {
-                                        compiled.delete();
                                         return channel.sendMessage(
                                             "Make sure you have Java 8 or higher installed. " +
                                             "Open your command line, " +
@@ -130,8 +128,14 @@ public enum Command {
                                 default -> channel.sendMessage(String.format("Error compiling: `javac` exited with code `%d`.", excode));
                             };
                         } catch(Throwable t) {
-                            throw new RuntimeException(t);
+                            return messages.error(message, t);
                         }
+                    })
+                    .map(msg -> {
+                        file.delete();
+                        compiled.delete();
+
+                        return null;
                     })
                     .queue();
             } catch(Throwable t) {
