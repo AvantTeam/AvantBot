@@ -54,7 +54,7 @@ public class Commands {
             int size = command.minArgSize();
             if(split.size() < size) {
                 message.getTextChannel()
-                    .sendMessage(String.format("Insufficient amount or arguments *(supplied: %d, required: %d)*.", split.size(), size))
+                    .sendMessage(String.format("Insufficient amount of arguments *(supplied: %d, required: %d)*.", split.size(), size))
                     .queue();
             } else {
                 command.execute(message, split);
