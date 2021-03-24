@@ -8,11 +8,16 @@ import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import javax.security.auth.login.*;
 
 public class AvantBot {
     private static final Logger LOG = LoggerFactory.getLogger(AvantBot.class);
+
+    public static final File ROOT_DIR = Paths.get(".").toFile();
+    public static final File CLASSES_DIR = Paths.get(".", "classes/").toFile();
 
     public static JDA jda;
 
@@ -32,6 +37,10 @@ public class AvantBot {
 
         LOG.info("Found bot token.");
         try {
+            ROOT_DIR.mkdirs();
+            CLASSES_DIR.mkdirs();
+            LOG.debug("Root dir: '{}', classes dir: '{}'.", ROOT_DIR.getAbsolutePath(), CLASSES_DIR.getAbsolutePath());
+
             settings = new Settings();
             commands = new Commands();
             warns = new Warns();

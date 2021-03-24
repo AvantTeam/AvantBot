@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 
 import java.awt.Color;
+import java.io.*;
 import java.util.*;
 
 import static com.github.avant.bot.AvantBot.*;
@@ -65,6 +66,77 @@ public enum Command {
             message.getTextChannel()
                 .sendMessage(builder.build())
                 .queue();
+        }
+    },
+
+    JAVAC("javac", "Compiles a Java source file for release 8.", DEFAULT) {
+        {
+            params = List.of(
+                new CommandParam(false, "classname"),
+                new CommandParam(false, "program...")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            TextChannel channel = message.getTextChannel();
+
+            String name = args.get(0);
+            String cname;
+            String content = args.get(1).trim();
+
+            if(!name.endsWith(".java")) {
+                cname = name + ".class";
+                name += ".java";
+            } else {
+                cname = name.substring(0, name.lastIndexOf(".java")) + ".class";
+            }
+
+            content.replaceAll("package (.|\\s)+;", "");
+
+            File file = new File(CLASSES_DIR.getAbsolutePath(), name);
+            try {
+                var writer = new OutputStreamWriter(new FileOutputStream(file, false));
+                writer.write(content);
+                writer.close();
+
+                String[] names = {name, cname};
+                channel
+                    .sendMessage("Compiling...")
+                    .flatMap(msg -> {
+                        try {
+                            Process process = Runtime.getRuntime().exec(new String[] {
+                                "javac", "--release", "8", names[0]
+                            }, null, CLASSES_DIR);
+
+                            int excode = process.waitFor();
+                            file.delete();
+                            File compiled = new File(CLASSES_DIR.getAbsolutePath(), names[1]);
+
+                            return switch(excode) {
+                                case 0 -> channel
+                                    .sendMessage("Here's your compiled `.class` file!")
+                                    .addFile(compiled)
+                                    .flatMap(m -> {
+                                        compiled.delete();
+                                        return channel.sendMessage(
+                                            "Make sure you have Java 8 or higher installed. " +
+                                            "Open your command line, " +
+                                            "`cd` to where the compiled file is located, " +
+                                            "then run `java <filename>`."
+                                        );
+                                    });
+
+                                default -> channel.sendMessage(String.format("Error compiling: `javac` exited with code `%d`.", excode));
+                            };
+                        } catch(Throwable t) {
+                            throw new RuntimeException(t);
+                        }
+                    })
+                    .queue();
+            } catch(Throwable t) {
+                throw new RuntimeException(t);
+            }
         }
     },
 

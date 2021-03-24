@@ -12,4 +12,5 @@ build/
 .vscode/
 
 # Bot
+classes/
 settings.json

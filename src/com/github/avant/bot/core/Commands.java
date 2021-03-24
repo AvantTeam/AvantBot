@@ -14,7 +14,7 @@ import static com.github.avant.bot.AvantBot.*;
 public class Commands {
     private static final Logger LOG = LoggerFactory.getLogger(Commands.class);
 
-    private final Pattern splitter = Pattern.compile("(?:\".+\")|(?:[^\\s]+)");
+    private final Pattern splitter = Pattern.compile("(?:```(?:.|[\\s\\S])*```)|(?:\".+\")|(?:[^\\s]+)");
 
     public Commands() {
         LOG.debug("Initialized command handler.");
@@ -36,7 +36,16 @@ public class Commands {
 
         Matcher matcher = splitter.matcher(cont);
         while(matcher.find()) {
-            split.add(matcher.group().replace("\"", ""));
+            String group = matcher.group();
+            if(group.startsWith("\"") && group.endsWith("\"")) {
+                group = group.substring(1, group.length() - 1);
+            }
+
+            if(group.startsWith("```") && group.endsWith("```")) {
+                group = group.replaceAll("```.*", "");
+            }
+
+            split.add(group);
         }
 
         String name = split.remove(0);
