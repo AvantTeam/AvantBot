@@ -10,7 +10,7 @@ while [ true ]; do
 
     # Run the .jar file
     cd resources
-    java -Dbot.token=$AVANT_BOT_TOKEN -Dbot.creator=$DISCORD_ID -jar ../build/libs/AvantBot.jar
+    java --enable-preview -Dbot.token=$AVANT_BOT_TOKEN -Dbot.creator=$DISCORD_ID -jar ../build/libs/AvantBot.jar
 
     # If successfully or forcefully exited, stop
     excode=$?
