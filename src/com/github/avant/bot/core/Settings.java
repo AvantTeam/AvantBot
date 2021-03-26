@@ -10,6 +10,8 @@ import java.util.*;
 import com.fasterxml.jackson.core.type.*;
 import com.fasterxml.jackson.databind.*;
 
+import static com.github.avant.bot.AvantBot.*;
+
 @SuppressWarnings("unchecked")
 public class Settings {
     private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
@@ -24,7 +26,7 @@ public class Settings {
         LOG.debug("Initializing bot settings.");
 
         mapper = new ObjectMapper();
-        file = new File("settings.json");
+        file = new File(ROOT_DIR.getAbsolutePath(), "settings.json");
         map = new LinkedHashMap<>();
 
         setDefaults();

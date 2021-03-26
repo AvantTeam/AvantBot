@@ -17,8 +17,8 @@ import javax.security.auth.login.*;
 public class AvantBot {
     private static final Logger LOG = LoggerFactory.getLogger(AvantBot.class);
 
-    public static final File ROOT_DIR = Paths.get("").toFile();
-    public static final File CLASSES_DIR = Paths.get("", "classes/").toFile();
+    public static final File ROOT_DIR;
+    public static final File CLASSES_DIR;
 
     public static JDA jda;
 
@@ -31,6 +31,21 @@ public class AvantBot {
     private static User creator;
 
     public static TicTacToe tictactoe;
+
+    static {
+        File home = Paths.get(".").toFile();
+        if(
+            List.of(home.list()).contains("resources") &&
+            new File(home.getAbsolutePath(), "resources").isDirectory()
+        ) {
+            ROOT_DIR = new File(home.getAbsolutePath(), "resources");
+        } else {
+            ROOT_DIR = home;
+        }
+
+        System.setProperty("user.home", ROOT_DIR.getAbsolutePath());
+        CLASSES_DIR = new File(ROOT_DIR.getAbsolutePath(), "classes" + File.separator);
+    }
 
     public static void main(String[] args) {
         String token = System.getProperty("bot.token");
