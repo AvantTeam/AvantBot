@@ -13,6 +13,8 @@ import com.github.avant.bot.content.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
+import static com.github.avant.bot.AvantBot.*;
+
 public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
     public static final BufferedImage TILE;
     public static final BufferedImage CHECK_X;
@@ -28,9 +30,9 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
 
     static {
         try {
-            TILE = ImageIO.read(new File("tictactoe-tile.png"));
-            CHECK_X = ImageIO.read(new File("tictactoe-check-x.png"));
-            CHECK_O = ImageIO.read(new File("tictactoe-check-o.png"));
+            TILE = ImageIO.read(new File(ROOT_DIR.getAbsolutePath(), "tictactoe-tile.png"));
+            CHECK_X = ImageIO.read(new File(ROOT_DIR.getAbsolutePath(), "tictactoe-check-x.png"));
+            CHECK_O = ImageIO.read(new File(ROOT_DIR.getAbsolutePath(), "tictactoe-check-o.png"));
 
             VALUES.put(3, 3);
             VALUES.put(4, 4);
