@@ -1,6 +1,7 @@
 package com.github.avant.bot.core;
 
 import com.github.avant.bot.content.*;
+import com.github.avant.bot.utils.exception.*;
 
 import org.slf4j.*;
 
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.hooks.*;
 import net.dv8tion.jda.api.requests.*;
 
 import java.io.*;
+import java.util.function.*;
 
 import static com.github.avant.bot.AvantBot.*;
 
@@ -35,7 +37,13 @@ public class Messages extends ListenerAdapter {
         try {
             commands.handle(msg, event.getMember());
         } catch(Throwable t) {
-            error(msg, t).queue();
+            if(t instanceof CommandException ex) {
+                msg.getTextChannel()
+                    .sendMessage(String.format("`%s%s`: %s", prefix(), ex.command.name, ex.getMessage()))
+                    .queue();
+            } else {
+                error(msg, t).queue();
+            }
         }
     }
 
@@ -47,46 +55,65 @@ public class Messages extends ListenerAdapter {
 
         if(user.getIdLong() == creator().getIdLong()) {
             act.queue();
-            return user.openPrivateChannel()
-                .flatMap(channel -> {
-                    StringWriter writer = new StringWriter();
-                    PrintWriter print = new PrintWriter(writer);
-
-                    t.printStackTrace(print);
-                    return channel.sendMessage(String.format("An error occured: ```\n%s```", writer.toString()));
-                });
+            return user
+                .openPrivateChannel()
+                .flatMap(channel -> channel.sendMessage(String.format("An error occured: `%s`", t.getMessage())));
         } else {
             return act;
         }
     }
 
     public Command commandExists(Message message, String name) {
-        Command command = Command.forName(name);
-        Member member = message.getMember();
-
-        if(command == null || !command.permission.qualified(member)) {
-            message.getTextChannel()
-                .sendMessage(String.format("%s, command '%s' does not exist or you do not have permission to use it.", member.getAsMention(), name))
-                .queue();
-
-            return null;
-        } else {
-            return command;
-        }
+        return assertMessage(
+            message,
+            () -> Command.forName(name),
+            (Command command, Member member) -> command.permission.qualified(member),
+            (Command command, Member member) -> String.format("%s, command '%s' does not exist or you do not have permission to use it.", member.getAsMention(), name)
+        );
     }
 
     public Member memberExists(Message message, String mention) {
-        Member target = getMember(message.getGuild(), parseMention(mention));
+        return assertMessage(
+            message,
+            () -> getMember(message.getGuild(), parseMention(mention)),
+            null,
+            (Member target, Member member) -> String.format("%s, '%s' does not seem to represent a server member.", member.getAsMention(), mention)
+        );
+    }
+
+    public int validNumber(Message message, String number, int min, int max) {
+        return assertMessage(
+            message,
+            () -> Integer.parseInt(number),
+            (Integer res, Member member) -> res >= min && res <= max,
+            (Integer res, Member member) -> {
+                if(res == null) {
+                    return String.format("%s, '%s' does not seem to represent a number.", member.getAsMention(), number);
+                } else {
+                    return String.format("%s, the number must be *less or equal to %d* and *more or equal to %d*.", member.getAsMention(), min, max);
+                }
+            }
+        );
+    }
+
+    public <T> T assertMessage(Message message, Supplier<T> supplier, BiPredicate<T, Member> predicate, BiFunction<T, Member, String> reply) {
+        T object;
+        try {
+            object = supplier.get();
+        } catch(Throwable t) {
+            object = null;
+        }
+
         Member member = message.getMember();
 
-        if(target == null) {
+        if(object == null || (predicate != null && !predicate.test(object, member))) {
             message.getTextChannel()
-                .sendMessage(String.format("%s, '%s' does not seem to represent a server member.", member.getAsMention(), mention))
+                .sendMessage(reply.apply(object, member))
                 .queue();
 
             return null;
         } else {
-            return target;
+            return object;
         }
     }
 

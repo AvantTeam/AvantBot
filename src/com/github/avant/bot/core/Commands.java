@@ -51,14 +51,37 @@ public class Commands {
         String name = split.remove(0);
         Command command;
         if((command = messages.commandExists(message, name)) != null) {
-            int size = command.minArgSize();
-            if(split.size() < size) {
-                message.getTextChannel()
-                    .sendMessage(String.format("Insufficient amount of arguments *(supplied: %d, required: %d)*.", split.size(), size))
-                    .queue();
+            if(!command.hidden) {
+                exec(message, command, split);
             } else {
-                command.execute(message, split);
+                Minigame<?, ?>.MinigameModule<?> module = null;
+
+                for(var game : Minigame.getAll()) {
+                    module = game.current(message.getGuild());
+                    if(module != null && module.getCommands().contains(command)) {
+                        break;
+                    }
+                }
+
+                if(module != null) {
+                    exec(message, command, split);
+                } else {
+                    message.getTextChannel()
+                        .sendMessage(String.format("You can't use `%s%s` at the moment.", prefix(), command.name))
+                        .queue();
+                }
             }
+        }
+    }
+
+    protected void exec(Message message, Command command, List<String> args) {
+        int size = command.minArgSize();
+        if(args.size() < size) {
+            message.getTextChannel()
+                .sendMessage(String.format("Insufficient amount of arguments *(supplied: %d, required: %d)*.", args.size(), size))
+                .queue();
+        } else {
+            command.execute(message, args);
         }
     }
 }

@@ -5,7 +5,7 @@ plugins {
 
 sourceSets.main {
     java.srcDirs = ["src/"];
-    resources.srcDirs = ["resources/"]
+    resources.srcDirs = ["resources/"];
 }
 
 repositories {
@@ -19,9 +19,6 @@ dependencies {
     api "net.dv8tion:JDA:4.2.0_242"
     api "com.fasterxml.jackson.core:jackson-databind:2.11.1"
 }
-
-sourceCompatibility = 15
-targetCompatibility = 15
 
 version = "1.0-SNAPSHOT"
 group = "com.github.avant"
@@ -48,7 +45,7 @@ task deploy(type: Jar) {
 
 task run(type: JavaExec, dependsOn: classes) {
     main = project.mainClass
-    workingDir = "$rootDir"
+    workingDir = "$rootDir/resources"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 
@@ -59,4 +56,18 @@ task run(type: JavaExec, dependsOn: classes) {
     if(project.hasProperty("bot.creator")) {
         systemProperty "bot.creator", project.getProperty("bot.creator")
     }
+}
+
+tasks.withType(JavaCompile) {
+    targetCompatibility = 8
+    sourceCompatibility = 15
+
+    options.encoding("UTF-8")
+
+    options.compilerArgs = options.compilerArgs.findAll { it != "--enable-preview" }
+    options.compilerArgs.addAll([ "--release", "15", "--enable-preview" ])
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += "--enable-preview"
 }

@@ -1,7 +1,7 @@
 package com.github.avant.bot.utils;
 
-public final class ElementUtils {
-    private ElementUtils() {}
+public final class Utilities {
+    private Utilities() {}
 
     public static Class<?> getClass(Object object) {
         Class<?> type = object.getClass();

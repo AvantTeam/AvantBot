@@ -1,5 +1,6 @@
 package com.github.avant.bot;
 
+import com.github.avant.bot.content.minigames.*;
 import com.github.avant.bot.core.*;
 
 import org.slf4j.*;
@@ -16,8 +17,8 @@ import javax.security.auth.login.*;
 public class AvantBot {
     private static final Logger LOG = LoggerFactory.getLogger(AvantBot.class);
 
-    public static final File ROOT_DIR = Paths.get(".").toFile();
-    public static final File CLASSES_DIR = Paths.get(".", "classes/").toFile();
+    public static final File ROOT_DIR = Paths.get("").toFile();
+    public static final File CLASSES_DIR = Paths.get("", "classes/").toFile();
 
     public static JDA jda;
 
@@ -28,6 +29,8 @@ public class AvantBot {
     public static Messages messages;
 
     private static User creator;
+
+    public static TicTacToe tictactoe;
 
     public static void main(String[] args) {
         String token = System.getProperty("bot.token");
@@ -66,7 +69,17 @@ public class AvantBot {
                 }
             }
 
-            init();
+            tictactoe = new TicTacToe();
+
+            String last = (String)settings.remove("restart-message");
+            if(last != null) {
+                String[] split = last.split("-");
+                jda.getGuildById(split[0])
+                    .getTextChannelById(split[1])
+                    .retrieveMessageById(split[2])
+                    .flatMap(msg -> msg.reply("Successfully restarted."))
+                    .queue();
+            }
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
         } catch(InterruptedException e) {
@@ -119,19 +132,6 @@ public class AvantBot {
             return guild.retrieveOwner(true).complete();
         } catch(Exception e) {
             return null;
-        }
-    }
-
-    protected static void init() {
-        String last = (String)settings.remove("restart-message");
-
-        if(last != null) {
-            String[] split = last.split("-");
-            jda.getGuildById(split[0])
-                .getTextChannelById(split[1])
-                .retrieveMessageById(split[2])
-                .flatMap(msg -> msg.reply("Successfully restarted."))
-                .queue();
         }
     }
 

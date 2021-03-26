@@ -74,13 +74,13 @@ public class Settings {
         var prev = map.get(key);
         if(
             prev == null ||
-            ElementUtils.getClass(value).isAssignableFrom(ElementUtils.getClass(prev))
+            Utilities.getClass(value).isAssignableFrom(Utilities.getClass(prev))
         ) {
             map.put(key, value);
             save();
         } else {
-            var cprev = ElementUtils.getClass(prev);
-            var cval = ElementUtils.getClass(value);
+            var cprev = Utilities.getClass(prev);
+            var cval = Utilities.getClass(value);
 
             throw new IllegalArgumentException("Setting '" + key + "' already exists with the type '" + cprev.getName() + "' and isn't assignable to '" + cval.getName() + "'.");
         }
@@ -90,9 +90,9 @@ public class Settings {
         var prev = map.get(key);
         if(
             prev != null &&
-            !type.isAssignableFrom(ElementUtils.getClass(prev))
+            !type.isAssignableFrom(Utilities.getClass(prev))
         ) {
-            var cprev = ElementUtils.getClass(prev);
+            var cprev = Utilities.getClass(prev);
             throw new IllegalArgumentException("Setting '" + key + "' already exists with the type '" + cprev.getName() + "' and isn't assignable to '" + type.getName() + "'.");
         } else {
             return (T)prev;

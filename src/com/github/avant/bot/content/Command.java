@@ -8,6 +8,9 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
+import com.github.avant.bot.content.minigames.TicTacToe.*;
+import com.github.avant.bot.utils.exception.*;
+
 import static com.github.avant.bot.AvantBot.*;
 import static com.github.avant.bot.content.Command.CommandPermission.*;
 
@@ -37,20 +40,7 @@ public enum Command {
                         .setTitle(prefix() + command.name)
                         .setDescription(command.description);
 
-                    StringBuilder buf = new StringBuilder()
-                        .append("`")
-                        .append(prefix() + command.name)
-                        .append(" ");
-
-                    for(int i = 0; i < command.params.size(); i++) {
-                        buf.append(command.params.get(i));
-                        if(i < command.params.size() - 1) {
-                            buf.append(" ");
-                        }
-                    }
-
-                    buf.append("`");
-                    builder.addField("Usage:", buf.toString(), false);
+                    builder.addField("Usage:", command.toString(), false);
                 }
             } else {
                 builder
@@ -170,6 +160,98 @@ public enum Command {
                     .queue();
             } catch(Throwable t) {
                 throw new RuntimeException(t);
+            }
+        }
+    },
+
+    TICTACTOE("ttt", "Plays a tictactoe game.", DEFAULT) {
+        {
+            params = List.of(
+                new CommandParam(false, "member"),
+                new CommandParam(false, "width")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            Member member = message.getMember();
+            Member opponent;
+            int width;
+
+            if(
+                (opponent = messages.memberExists(message, args.get(0))) != null &&
+                (width = messages.validNumber(message, args.get(1), 3, 8)) > 0
+            ) {
+                if(member.getIdLong() == opponent.getIdLong()) {
+                    message
+                        .getTextChannel()
+                        .sendMessage("Can't play with yourself, get a friend.")
+                        .queue();
+                } else {
+                    try {
+                        TicTacToeModule module = tictactoe.start(member, opponent);
+                        module.init(width);
+
+                        message.getTextChannel()
+                            .sendMessage(String.format(
+                                "Starting a TicTacToe game, %s against %s! The check target count is %d.",
+                                member.getAsMention(),
+                                opponent.getAsMention(),
+                                module.getCount()
+                            ))
+                            .flatMap(module::sendImage)
+                            .flatMap(msg -> message.getTextChannel().sendMessage(String.format(
+                                "Use %s to check the board. Note that `(1, 1)` is the board's top-left corner.",
+                                Command.TICTACTOE_CHECK.toString()
+                            )))
+                            .flatMap(module::notifyTurn)
+                            .queue();
+                    } catch(IllegalArgumentException e) {
+                        throw new CommandException(this, e.getMessage());
+                    }
+                }
+            }
+        }
+    },
+
+    TICTACTOE_CHECK("tttc", DEFAULT) {
+        {
+            params = List.of(
+                new CommandParam(false, "column"),
+                new CommandParam(false, "row")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            Member member = message.getMember();
+
+            var module = tictactoe.current(message.getGuild());
+            if(module != null) {
+                int[] position;
+                if((position = messages.assertMessage(
+                    message,
+                    () -> new int[]{
+                        Integer.parseInt(args.get(0)),
+                        Integer.parseInt(args.get(1))
+                    },
+
+                    (int[] pos, Member m) ->
+                        pos[0] <= module.getWidth() && pos[0] <= module.getWidth() &&
+                        pos[0] > 0 && pos[0] > 0 &&
+
+                        pos[1] <= module.getWidth() && pos[1] <= module.getWidth() &&
+                        pos[1] > 0 && pos[1] > 0,
+
+                    (int[] pos, Member m) -> String.format(
+                        "%s, `(%s, %s)` must be inclusively between `(1, 1)` and `(%d, %d)`.",
+                        member.getAsMention(),
+                        args.get(0), args.get(1),
+                        module.getWidth(), module.getWidth()
+                    )
+                )) != null) {
+                    module.execute(message, message.getMember(), () -> new int[]{ position[0], position[1] });
+                }
             }
         }
     },
@@ -302,6 +384,7 @@ public enum Command {
 
     public final String name;
     public final String description;
+    public final boolean hidden;
 
     public final CommandPermission permission;
     public List<CommandParam> params = List.of();
@@ -318,6 +401,14 @@ public enum Command {
     Command(String name, String description, CommandPermission permission) {
         this.name = name;
         this.description = description;
+        hidden = false;
+        this.permission = permission;
+    }
+
+    Command(String name, CommandPermission permission) {
+        this.name = name;
+        this.description = null;
+        this.hidden = true;
         this.permission = permission;
     }
 
@@ -331,6 +422,24 @@ public enum Command {
             }
         }
         return minArgSize;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder()
+            .append("`")
+            .append(prefix() + name)
+            .append(" ");
+
+        for(int i = 0; i < params.size(); i++) {
+            buf.append(params.get(i));
+            if(i < params.size() - 1) {
+                buf.append(" ");
+            }
+        }
+
+        buf.append("`");
+        return buf.toString();
     }
 
     public class CommandParam {
