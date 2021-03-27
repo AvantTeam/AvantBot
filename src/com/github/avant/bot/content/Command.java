@@ -36,11 +36,19 @@ public enum Command {
             if(args.size() > 0) {
                 Command command;
                 if((command = messages.commandExists(message, args.get(0))) != null) {
-                    builder
-                        .setTitle(prefix() + command.name)
-                        .setDescription(command.description);
+                    if(command.hidden) {
+                        message.getTextChannel()
+                            .sendMessage(String.format("You can't use `%s%s` at the moment.", prefix(), command.name))
+                            .queue();
 
-                    builder.addField("Usage:", command.toString(), false);
+                        return;
+                    } else {
+                        builder
+                            .setTitle(prefix() + command.name)
+                            .setDescription(command.description);
+
+                        builder.addField("Usage:", command.toString(), false);
+                    }
                 }
             } else {
                 builder
@@ -48,7 +56,7 @@ public enum Command {
                     .setDescription("List of server commands that you may use.");
 
                 for(Command command : ALL) {
-                    if(command.permission.qualified(member)) {
+                    if(!command.hidden && command.permission.qualified(member)) {
                         builder.addField(prefix() + command.name, command.description, false);
                     }
                 }
