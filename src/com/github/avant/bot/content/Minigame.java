@@ -1,6 +1,7 @@
 package com.github.avant.bot.content;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.*;
 
 import net.dv8tion.jda.api.entities.*;
@@ -64,12 +65,27 @@ public abstract class Minigame<T extends Minigame<T, M>, M extends Minigame<T, M
         }
 
         public Member getCurrent() {
+            return get(current);
+        }
+
+        public Member get(int current) {
             return players.get(current % players.size());
         }
 
         public RestAction<Message> notifyTurn(Message message) {
+            int[] c = {current};
             return message.getTextChannel()
-                .sendMessage(String.format("Now is your turn, %s!", getCurrent().getAsMention()));
+                .sendMessage(String.format("Now is your turn, %s!\nIf you don't respond in 30 seconds, the game will automatically end.", getCurrent().getAsMention()))
+                .delay(30, TimeUnit.SECONDS)
+                .flatMap(msg -> c[0] == current, msg -> {
+                    stop(msg.getGuild());
+                    return unresponsive(msg, get(current));
+                });
+        }
+
+        public RestAction<Message> unresponsive(Message message, Member unresponsive) {
+            return message.getTextChannel()
+                .sendMessage(String.format("Due to %s being unresponsive, %s won the game!", get(current).getEffectiveName(), get(current + 1).getAsMention()));
         }
 
         public List<Command> getCommands() {
