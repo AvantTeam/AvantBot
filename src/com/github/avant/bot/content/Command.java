@@ -264,6 +264,19 @@ public enum Command {
         }
     },
 
+    TICTACTOE_QUIT("tttq", DEFAULT) {
+        @Override
+        public void execute(Message message, List<String> args) {
+            var module = tictactoe.current(message.getGuild());
+            if(module != null) {
+                tictactoe.stop(message.getGuild());
+                message.getTextChannel()
+                    .sendMessage("Stopped the current TicTacToe game.")
+                    .queue();
+            }
+        }
+    },
+
     WARN("warn", "Warns a server member.", ADMIN_ONLY) {
         {
             params = List.of(

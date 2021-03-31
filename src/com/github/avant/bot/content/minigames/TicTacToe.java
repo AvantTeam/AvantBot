@@ -24,7 +24,8 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
 
     {
         commands = List.of(
-            Command.TICTACTOE_CHECK
+            Command.TICTACTOE_CHECK,
+            Command.TICTACTOE_QUIT
         );
     }
 
