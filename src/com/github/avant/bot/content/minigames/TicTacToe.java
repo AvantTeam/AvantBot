@@ -173,24 +173,28 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
                 }
             }
 
-            if(x == y) {
-                for(int i = 0; i < width; i++) {
-                    if(tiles[i][i] != member) break;
+            for(int tx = 0; tx <= width - count; tx++) {
+                for(int ty = 0; ty <= width - count; ty++) {
+                    for(int i = 0; i < count; i++) {
+                        if(tiles[tx + i][ty + i] != member) break;
 
-                    if(i == count - 1) {
-                        winner = member;
-                        return;
+                        if(i == count - 1) {
+                            winner = member;
+                            return;
+                        }
                     }
                 }
             }
 
-            if(x + y == width - 1) {
-                for(int i = 0; i < width; i++) {
-                    if(tiles[i][(width - 1) - i] != member) break;
+            for(int tx = width - 1; tx >= count - 1; tx--) {
+                for(int ty = 0; ty <= width - count; ty++) {
+                    for(int i = 0; i < count; i++) {
+                        if(tiles[tx - i][ty + i] != member) break;
 
-                    if(i == count - 1) {
-                        winner = member;
-                        return;
+                        if(i == count - 1) {
+                            winner = member;
+                            return;
+                        }
                     }
                 }
             }
