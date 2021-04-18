@@ -394,7 +394,18 @@ public enum Command {
                 .complete();
 
             settings.put("restart-message", String.format("%s-%s-%s", res.getGuild().getId(), res.getTextChannel().getId(), res.getId()));
-            exit();
+            exit(1);
+        }
+    },
+
+    EXIT("exit", "Exits the bot with code 0. Will not restart.", OWNER_ONLY){
+        @Override
+        public void execute(Message message, List<String> args) {
+            message.getTextChannel()
+                .sendMessage("Exiting...")
+                .queue();
+
+            exit(0);
         }
     };
 

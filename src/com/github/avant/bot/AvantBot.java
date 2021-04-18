@@ -150,12 +150,10 @@ public class AvantBot {
         }
     }
 
-    public static void exit() {
+    public static void exit(int code) {
         LOG.info("Shutting the JDA instance down.");
-
-        jda.shutdown();
         settings.save();
 
-        System.exit(1);
+        System.exit(code);
     }
 }
