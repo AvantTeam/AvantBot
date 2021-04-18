@@ -1,4 +1,4 @@
-package com.github.avant.bot.content;
+package bot.content;
 
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
@@ -8,11 +8,11 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-import com.github.avant.bot.content.minigames.TicTacToe.*;
-import com.github.avant.bot.utils.exception.*;
+import bot.content.minigames.TicTacToe.*;
+import bot.utils.exception.*;
 
-import static com.github.avant.bot.AvantBot.*;
-import static com.github.avant.bot.content.Command.CommandPermission.*;
+import static bot.AvantBot.*;
+import static bot.content.Command.CommandPermission.*;
 
 public enum Command {
     HELP("help", "Shows all server commands that you may use.", DEFAULT) {

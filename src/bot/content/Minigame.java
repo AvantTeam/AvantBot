@@ -1,4 +1,4 @@
-package com.github.avant.bot.content;
+package bot.content;
 
 import java.util.*;
 import java.util.concurrent.*;

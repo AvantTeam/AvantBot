@@ -1,6 +1,6 @@
-package com.github.avant.bot.core;
+package bot.core;
 
-import com.github.avant.bot.content.*;
+import bot.content.*;
 
 import org.slf4j.*;
 
@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.entities.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static com.github.avant.bot.AvantBot.*;
+import static bot.AvantBot.*;
 
 public class Commands {
     private static final Logger LOG = LoggerFactory.getLogger(Commands.class);

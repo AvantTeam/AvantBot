@@ -1,6 +1,6 @@
-package com.github.avant.bot.core;
+package bot.core;
 
-import com.github.avant.bot.utils.*;
+import bot.utils.*;
 
 import org.slf4j.*;
 
@@ -10,7 +10,7 @@ import java.util.*;
 import com.fasterxml.jackson.core.type.*;
 import com.fasterxml.jackson.databind.*;
 
-import static com.github.avant.bot.AvantBot.*;
+import static bot.AvantBot.*;
 
 @SuppressWarnings("unchecked")
 public class Settings {

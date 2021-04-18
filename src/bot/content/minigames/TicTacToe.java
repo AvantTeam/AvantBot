@@ -1,4 +1,4 @@
-package com.github.avant.bot.content.minigames;
+package bot.content.minigames;
 
 import java.awt.Graphics2D;
 import java.awt.image.*;
@@ -8,12 +8,12 @@ import java.util.function.*;
 
 import javax.imageio.*;
 
-import com.github.avant.bot.content.*;
+import bot.content.*;
 
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
-import static com.github.avant.bot.AvantBot.*;
+import static bot.AvantBot.*;
 
 public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
     public static final BufferedImage TILE;

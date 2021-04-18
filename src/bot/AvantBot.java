@@ -1,7 +1,7 @@
-package com.github.avant.bot;
+package bot;
 
-import com.github.avant.bot.content.minigames.*;
-import com.github.avant.bot.core.*;
+import bot.content.minigames.*;
+import bot.core.*;
 
 import org.slf4j.*;
 

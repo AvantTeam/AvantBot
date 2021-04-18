@@ -1,11 +1,11 @@
 plugins {
-    id "java"
-    id "java-library"
+    id 'java'
+    id 'java-library'
 }
 
 sourceSets.main {
-    java.srcDirs = ["src/"];
-    resources.srcDirs = ["resources/"];
+    java.srcDirs = ['src/'];
+    resources.srcDirs = ['resources/'];
 }
 
 repositories {
@@ -13,48 +13,44 @@ repositories {
 }
 
 dependencies {
-    api "org.slf4j:slf4j-api:1.7.29"
-    api "org.slf4j:slf4j-log4j12:1.7.29"
+    api "org.slf4j:slf4j-api:$slf4jVersion"
+    api "org.slf4j:slf4j-log4j12:$slf4jVersion"
 
-    api "net.dv8tion:JDA:4.2.0_242"
-    api "com.fasterxml.jackson.core:jackson-databind:2.11.1"
+    api "net.dv8tion:JDA:$jdaVersion"
+    api "com.fasterxml.jackson.core:jackson-databind:$jsonVersion"
 }
 
-version = "1.0-SNAPSHOT"
-group = "com.github.avant"
+version = '1.0-SNAPSHOT'
+group = 'com.github.avant'
 
 ext {
-    mainClass = "com.github.avant.bot.AvantBot"
+    mainClass = 'bot.AvantBot'
 }
 
 task deploy(type: Jar) {
-    archiveFileName = "AvantBot.jar"
+    archiveFileName = 'AvantBot.jar'
 
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
-    from configurations.runtimeClasspath.collect {
-        it.isDirectory() || !it.name.endsWithAny(".zip", ".jar")
-        ?   it
-        :   zipTree(it)
-    }
+    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 
     manifest {
-        attributes "Main-Class": project.mainClass
+        attributes 'Main-Class': mainClass
     }
 }
 
 task run(type: JavaExec, dependsOn: classes) {
-    main = project.mainClass
+    main = mainClass
     workingDir = "$rootDir/resources"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 
-    if(project.hasProperty("bot.token")) {
-        systemProperty "bot.token", project.getProperty("bot.token")
+    if(project.hasProperty('bot.token')) {
+        systemProperty 'bot.token', project.getProperty('bot.token')
     }
 
-    if(project.hasProperty("bot.creator")) {
-        systemProperty "bot.creator", project.getProperty("bot.creator")
+    if(project.hasProperty('bot.creator')) {
+        systemProperty 'bot.creator', project.getProperty('bot.creator')
     }
 }
 
@@ -62,12 +58,14 @@ tasks.withType(JavaCompile) {
     targetCompatibility = 8
     sourceCompatibility = 15
 
-    options.encoding("UTF-8")
+    options.encoding 'UTF-8'
+    options.compilerArgs.addAll([ '--release', '15', '--enable-preview' ])
 
-    options.compilerArgs = options.compilerArgs.findAll { it != "--enable-preview" }
-    options.compilerArgs.addAll([ "--release", "15", "--enable-preview" ])
+    doFirst {
+        options.compilerArgs = options.compilerArgs.findAll { it != '--enable-preview' }
+    }
 }
 
 tasks.withType(JavaExec) {
-    jvmArgs += "--enable-preview"
+    jvmArgs += '--enable-preview'
 }

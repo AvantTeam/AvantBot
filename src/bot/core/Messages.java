@@ -1,7 +1,7 @@
-package com.github.avant.bot.core;
+package bot.core;
 
-import com.github.avant.bot.content.*;
-import com.github.avant.bot.utils.exception.*;
+import bot.content.*;
+import bot.utils.exception.*;
 
 import org.slf4j.*;
 
@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.requests.*;
 import java.io.*;
 import java.util.function.*;
 
-import static com.github.avant.bot.AvantBot.*;
+import static bot.AvantBot.*;
 
 public class Messages extends ListenerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(Messages.class);

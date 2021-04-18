@@ -1,4 +1,4 @@
-package com.github.avant.bot.utils;
+package bot.utils;
 
 public final class Utilities {
     private Utilities() {}

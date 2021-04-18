@@ -1,4 +1,4 @@
-package com.github.avant.bot.core;
+package bot.core;
 
 import net.dv8tion.jda.api.entities.*;
 
@@ -6,7 +6,7 @@ import java.util.*;
 
 import org.slf4j.*;
 
-import static com.github.avant.bot.AvantBot.*;
+import static bot.AvantBot.*;
 
 @SuppressWarnings("unchecked")
 public class Warns {

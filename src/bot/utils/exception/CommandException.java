@@ -1,8 +1,8 @@
-package com.github.avant.bot.utils.exception;
+package bot.utils.exception;
 
 import java.io.*;
 
-import com.github.avant.bot.content.*;
+import bot.content.*;
 
 public class CommandException extends IllegalArgumentException {
     private static final @Serial long serialVersionUID = 1L;
