@@ -64,9 +64,12 @@ public class Messages extends ListenerAdapter {
                         STREAM.reset();
                         t.printStackTrace(PRINT);
 
-                        return channel
-                            .sendMessage("An error occursed")
-                            .addFile(STREAM.toByteArray(), "crashlog.txt");
+                        synchronized(PRINT) {
+                            channel.sendMessage("" + STREAM.size()).queue();
+                            return channel
+                                .sendMessage("An error occursed")
+                                .addFile(STREAM.toByteArray(), "crashlog.txt");
+                        }
                     }
                 });
         } else {
