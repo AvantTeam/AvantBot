@@ -21,6 +21,7 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
     public static final BufferedImage CHECK_O;
 
     private static final Map<Integer, Integer> VALUES = new HashMap<>();
+    private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
 
     {
         commands = List.of(
@@ -45,8 +46,6 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
             throw new RuntimeException(e);
         }
     }
-
-    private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
 
     @Override
     public TicTacToeModule create(Member... players) {
@@ -74,31 +73,33 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
             tiles = new Member[width][width];
         }
 
-        public synchronized RestAction<Message> sendImage(Message message) {
-            try {
-                BufferedImage base = new BufferedImage(width * 64, width * 64, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D graphics = base.createGraphics();
-
-                for(int x = 0; x < width; x++) {
-                    for(int y = 0; y < width; y++) {
-                        graphics.drawImage(TILE, x * 64, y * 64, null);
-
-                        Member tile = tiles[x][y];
-                        if(tile != null) {
-                            graphics.drawImage(checkMap.get(tile.getId()), x * 64, y * 64, null);
+        public RestAction<Message> sendImage(Message message) {
+            synchronized(TicTacToe.class) {
+                try {
+                    BufferedImage base = new BufferedImage(width * 64, width * 64, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D graphics = base.createGraphics();
+    
+                    for(int x = 0; x < width; x++) {
+                        for(int y = 0; y < width; y++) {
+                            graphics.drawImage(TILE, x * 64, y * 64, null);
+    
+                            Member tile = tiles[x][y];
+                            if(tile != null) {
+                                graphics.drawImage(checkMap.get(tile.getId()), x * 64, y * 64, null);
+                            }
                         }
                     }
+    
+                    STREAM.reset();
+                    ImageIO.write(base, "png", STREAM);
+    
+                    graphics.dispose();
+                    return message.getTextChannel()
+                        .sendMessage("Image preview:")
+                        .addFile(STREAM.toByteArray(), "image.png");
+                } catch(IOException e) {
+                    throw new RuntimeException(e);
                 }
-
-                STREAM.reset();
-                ImageIO.write(base, "png", STREAM);
-
-                graphics.dispose();
-                return message.getTextChannel()
-                    .sendMessage("Image preview:")
-                    .addFile(STREAM.toByteArray(), "image.png");
-            } catch(IOException e) {
-                throw new RuntimeException(e);
             }
         }
 
