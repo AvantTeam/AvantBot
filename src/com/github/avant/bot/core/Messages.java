@@ -18,7 +18,7 @@ import static com.github.avant.bot.AvantBot.*;
 public class Messages extends ListenerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(Messages.class);
     private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
-    private static final PrintWriter PRINT = new PrintWriter(STREAM);
+    private static final PrintStream PRINT = new PrintStream(STREAM);
 
     private static final String[] warns = { "once", "twice", "thrice", "four times", "too many times" };
 
@@ -60,16 +60,12 @@ public class Messages extends ListenerAdapter {
             return user
                 .openPrivateChannel()
                 .flatMap(channel -> {
-                    synchronized(Messages.class) {
-                        STREAM.reset();
-                        t.printStackTrace(PRINT);
+                    STREAM.reset();
+                    t.printStackTrace(PRINT);
 
-                        synchronized(PRINT) {
-                            return channel
-                                .sendMessage("An error occursed")
-                                .addFile(STREAM.toByteArray(), "crashlog.txt");
-                        }
-                    }
+                    return channel
+                        .sendMessage("An error occured")
+                        .addFile(STREAM.toByteArray(), "crashlog.txt");
                 });
         } else {
             return act;
