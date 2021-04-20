@@ -188,7 +188,7 @@ public enum Command {
 
             if(
                 (opponent = messages.memberExists(message, args.get(0))) != null &&
-                (width = messages.validNumber(message, args.get(1), 3, 8)) > 0
+                (width = messages.validNumber(message, args.get(1), 3, 8)) != -1
             ) {
                 if(member.getIdLong() == opponent.getIdLong()) {
                     message

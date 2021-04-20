@@ -91,6 +91,8 @@ public class Messages extends ListenerAdapter {
     }
 
     public int validNumber(Message message, String number, int min, int max) {
+        int i = 0 / 0;
+        System.out.println(i);
         return assertMessage(
             message,
             () -> Integer.parseInt(number),
