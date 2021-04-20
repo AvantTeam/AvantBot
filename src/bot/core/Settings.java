@@ -115,4 +115,8 @@ public class Settings {
     public boolean has(String key) {
         return map.containsKey(key);
     }
+
+    public File getFile() {
+        return file;
+    }
 }

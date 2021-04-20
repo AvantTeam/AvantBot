@@ -64,7 +64,7 @@ public class Messages extends ListenerAdapter {
                     t.printStackTrace(PRINT);
 
                     return channel
-                        .sendMessage("An error occured")
+                        .sendMessage("An error occured:")
                         .addFile(STREAM.toByteArray(), "crashlog.txt");
                 });
         } else {

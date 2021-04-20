@@ -1,6 +1,7 @@
 package bot.core;
 
 import bot.content.*;
+import bot.content.Command.*;
 
 import org.slf4j.*;
 
@@ -81,6 +82,38 @@ public class Commands {
                 .sendMessage(String.format("Insufficient amount of arguments *(supplied: %d, required: %d)*.", args.size(), size))
                 .queue();
         } else {
+            for(int i = 0; i < Math.min(command.params.size(), args.size()); i++) {
+                CommandParam param = command.params.get(i);
+                String arg = args.get(i);
+
+                if(!param.reserved.isEmpty() && !param.reserved.contains(arg)) {
+                    StringBuilder builder = new StringBuilder();
+                    int c = 0;
+                    for(; c < param.reserved.size(); c++) {
+                        if(param.reserved.size() > 1 && c == param.reserved.size() - 1) builder.append("and ");
+
+                        builder.append("`" + param.reserved.get(c) + "`");
+
+                        if(param.reserved.size() > 2 && c < param.reserved.size() - 1) {
+                            builder.append(", ");
+                        } else if(param.reserved.size() == 2) {
+                            builder.append(" ");
+                        }
+                    }
+
+                    message.getTextChannel()
+                        .sendMessage(String.format("Invalid parameter `%d`: `%s`. Only %s %s accepted.",
+                            i,
+                            arg,
+                            builder.toString(),
+                            c == 0 ? "is" : "are"
+                        ))
+                        .queue();
+
+                    return;
+                }
+            }
+
             command.execute(message, args);
         }
     }

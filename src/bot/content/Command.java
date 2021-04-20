@@ -18,7 +18,7 @@ public enum Command {
     HELP("help", "Shows all server commands that you may use.", DEFAULT) {
         {
             params = List.of(
-                new CommandParam(true, "command")
+            new CommandParam(true, "command")
             );
         }
 
@@ -71,8 +71,8 @@ public enum Command {
     JAVAC("javac", "Compiles a Java source file for release 8.", DEFAULT) {
         {
             params = List.of(
-                new CommandParam(false, "classname"),
-                new CommandParam(false, "program...")
+            new CommandParam(false, "classname"),
+            new CommandParam(false, "program...")
             );
         }
 
@@ -175,8 +175,8 @@ public enum Command {
     TICTACTOE("ttt", "Plays a tictactoe game.", DEFAULT) {
         {
             params = List.of(
-                new CommandParam(false, "member"),
-                new CommandParam(false, "width")
+            new CommandParam(false, "member"),
+            new CommandParam(false, "width")
             );
         }
 
@@ -225,8 +225,8 @@ public enum Command {
     TICTACTOE_CHECK("tttc", DEFAULT) {
         {
             params = List.of(
-                new CommandParam(false, "column"),
-                new CommandParam(false, "row")
+            new CommandParam(false, "column"),
+            new CommandParam(false, "row")
             );
         }
 
@@ -280,8 +280,8 @@ public enum Command {
     WARN("warn", "Warns a server member.", ADMIN_ONLY) {
         {
             params = List.of(
-                new CommandParam(false, "member"),
-                new CommandParam(true, "reason...")
+            new CommandParam(false, "member"),
+            new CommandParam(true, "reason...")
             );
         }
 
@@ -304,7 +304,7 @@ public enum Command {
     CLEARWARN("clearwarn", "Clears a server member's warnings", ADMIN_ONLY) {
         {
             params = List.of(
-                new CommandParam(false, "member")
+            new CommandParam(false, "member")
             );
         }
 
@@ -327,7 +327,7 @@ public enum Command {
     WARNINGS("warnings", "View a server member's or your warnings", ADMIN_ONLY) {
         {
             params = List.of(
-                new CommandParam(true, "member")
+            new CommandParam(true, "member")
             );
         }
 
@@ -381,6 +381,32 @@ public enum Command {
                             :   String.format("%s, you have", offended.getAsMention())
                         ))
                         .queue();
+                }
+            }
+        }
+    },
+
+    GET_SETTINGS("settings", "Gets/sets the bot's setting file", OWNER_ONLY) {
+        {
+            params = List.of(
+            new CommandParam(false, "get/set", "get", "set")
+            );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            switch(args.get(0)) {
+                case "get" -> {
+                    message.getAuthor().openPrivateChannel().flatMap(channel -> channel
+                        .sendMessage("The currently used bot settings file:")
+                        .addFile(settings.getFile())
+                    );
+
+                    break;
+                }
+
+                case "set" -> {
+                    break;
                 }
             }
         }
@@ -477,10 +503,12 @@ public enum Command {
     public class CommandParam {
         public final boolean optional;
         public final String name;
+        public final List<String> reserved;
 
-        public CommandParam(boolean optional, String name) {
+        public CommandParam(boolean optional, String name, String... reserved) {
             this.optional = optional;
             this.name = name;
+            this.reserved = List.of(reserved);
         }
 
         @Override
