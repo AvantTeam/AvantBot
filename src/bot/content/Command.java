@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.zip.*;
 
 import bot.content.minigames.TicTacToe.*;
+import bot.core.*;
 import bot.utils.exception.*;
 
 import static bot.AvantBot.*;
@@ -188,7 +189,7 @@ public enum Command {
 
             if(
                 (opponent = messages.memberExists(message, args.get(0))) != null &&
-                (width = messages.validNumber(message, args.get(1), 3, 8)) != -1
+                (width = messages.validNumber(message, args.get(1), 3, 8)) != Messages.INVALID
             ) {
                 if(member.getIdLong() == opponent.getIdLong()) {
                     message

@@ -20,7 +20,8 @@ public class Messages extends ListenerAdapter {
     private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
     private static final PrintStream PRINT = new PrintStream(STREAM);
 
-    private static final String[] warns = { "once", "twice", "thrice", "four times", "too many times" };
+    public static final int INVALID = 0x7fc00000;
+    private static final String[] WARNS = { "once", "twice", "thrice", "four times", "too many times" };
 
     public Messages() {
         LOG.debug("Initialized message listener.");
@@ -91,9 +92,7 @@ public class Messages extends ListenerAdapter {
     }
 
     public int validNumber(Message message, String number, int min, int max) {
-        int i = 0 / 0;
-        System.out.println(i);
-        return assertMessage(
+        Integer result = assertMessage(
             message,
             () -> Integer.parseInt(number),
             (Integer res, Member member) -> res >= min && res <= max,
@@ -101,10 +100,12 @@ public class Messages extends ListenerAdapter {
                 if(res == null) {
                     return String.format("%s, '%s' does not seem to represent a number.", member.getAsMention(), number);
                 } else {
-                    return String.format("%s, the number must be *less or equal to %d* and *more or equal to %d*.", member.getAsMention(), min, max);
+                    return String.format("%s, the number must be *from* %d *to* %d.", member.getAsMention(), min, max);
                 }
             }
         );
+
+        return result != null ? result.intValue() : INVALID;
     }
 
     public <T> T assertMessage(Message message, Supplier<T> supplier, BiPredicate<T, Member> predicate, BiFunction<T, Member, String> reply) {
@@ -129,7 +130,7 @@ public class Messages extends ListenerAdapter {
     }
 
     public String warnMessage(int i) {
-        return warns[Math.min(Math.max(i - 1, 0), warns.length - 1)];
+        return WARNS[Math.min(Math.max(i - 1, 0), WARNS.length - 1)];
     }
 
     public User parseMention(String mention) {
