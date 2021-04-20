@@ -6,7 +6,7 @@ while [ true ]; do
     git pull --rebase --no-edit
 
     # Build the .jar file
-    ./gradlew -Dorg.gradle.daemon=false deploy
+    ./gradlew deploy
 
     # Run the .jar file
     java --enable-preview -Dbot.token=$AVANT_BOT_TOKEN -Dbot.creator=$DISCORD_ID -jar build/libs/AvantBot.jar
