@@ -32,15 +32,19 @@ task deploy(type: Jar) {
 
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
-    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    from configurations.runtimeClasspath.collect {
+        it.isDirectory() || !it.name.endsWithAny('.zip', '.jar')
+        ?   it
+        :   zipTree(it)
+    }
 
     manifest {
-        attributes 'Main-Class': mainClass
+        attributes 'Main-Class': project.mainClass
     }
 }
 
 task run(type: JavaExec, dependsOn: classes) {
-    main = mainClass
+    main = project.mainClass
     workingDir = "$rootDir/resources"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
@@ -55,15 +59,12 @@ task run(type: JavaExec, dependsOn: classes) {
 }
 
 tasks.withType(JavaCompile) {
-    targetCompatibility = 8
+    targetCompatibility = 15
     sourceCompatibility = 15
 
+    options.fork = true
     options.encoding 'UTF-8'
-    options.compilerArgs.addAll([ '--release', '15', '--enable-preview' ])
-
-    doFirst {
-        options.compilerArgs = options.compilerArgs.findAll { it != '--enable-preview' }
-    }
+    options.compilerArgs += '--enable-preview'
 }
 
 tasks.withType(JavaExec) {
