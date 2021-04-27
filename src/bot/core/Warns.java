@@ -65,17 +65,12 @@ public class Warns {
     private Map<String, Object> data(Member member, boolean save) {
         Guild guild = member.getGuild();
 
-        Map<String, Map<String, Map<String, Object>>> warns = settings.get("warns", Map.class);
+        Map<String, Map<String, Object>> warns = settings.get("warns", Map.class);
         if(!warns.containsKey(guild.getId())) {
             warns.put(guild.getId(), new LinkedHashMap<>());
         }
 
-        Map<String, Map<String, Object>> guildMap = warns.get(guild.getId());
-        if(!guildMap.containsKey(member.getId())) {
-            guildMap.put(member.getId(), new LinkedHashMap<>());
-        }
-
-        Map<String, Object> map = guildMap.get(member.getId());
+        Map<String, Object> map = warns.get(member.getId());
 
         var count = (int)map.getOrDefault("count", 0);
         map.put("count", count);

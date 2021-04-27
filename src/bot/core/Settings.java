@@ -55,7 +55,7 @@ public class Settings {
             put("channels", channels);
         }
         if(!has("warns")) {
-            put("warns", new LinkedHashMap<String, Map<String, Map<String, Object>>>());
+            put("warns", new LinkedHashMap<String, Map<String, Object>>());
         }
     }
 
