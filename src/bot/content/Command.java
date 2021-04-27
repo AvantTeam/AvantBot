@@ -401,6 +401,9 @@ public enum Command {
                 message.getAuthor().openPrivateChannel().flatMap(channel -> channel
                     .sendMessage("The currently used bot settings file:")
                     .addFile(settings.getFile())
+                    .flatMap(msg -> message.getTextChannel()
+                        .sendMessage("Sent the settings file.")
+                    )
                 ).queue();
             } else {
                 Attachment file = null;
@@ -417,6 +420,9 @@ public enum Command {
                 } else {
                     file.retrieveInputStream().thenAcceptAsync(input -> { try {
                         settings.setFile(input);
+                        message.getTextChannel()
+                            .sendMessage("Successfully set the settings file.")
+                            .queue();
                     } catch(IOException e) {
                         message.getTextChannel()
                             .sendMessage("The sent settings file is broken or not a valid JSON file.")
