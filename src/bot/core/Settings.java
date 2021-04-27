@@ -27,6 +27,7 @@ public class Settings {
 
         mapper = new ObjectMapper();
         file = new File(ROOT_DIR.getAbsolutePath(), "settings.json");
+
         map = new LinkedHashMap<>();
 
         setDefaults();
@@ -40,6 +41,7 @@ public class Settings {
 
         map.clear();
         map.putAll(ref);
+        save();
     }
 
     private void setDefaults() {
