@@ -34,6 +34,14 @@ public class Settings {
         LOG.debug("Initialized bot settings.");
     }
 
+    public void setFile(InputStream stream) throws IOException {
+        Map<String, Object> ref = new LinkedHashMap<>();
+        read(stream, ref);
+
+        map.clear();
+        map.putAll(ref);
+    }
+
     private void setDefaults() {
         read();
 
@@ -53,15 +61,22 @@ public class Settings {
 
     private void read() {
         if(file.exists()) {
-            LOG.debug("Found bot settings file; trying to read and parse.");
-            try {
-                map.putAll(mapper.readValue(file, REF_MAP));
-            } catch(Exception e) {
-                throw new RuntimeException(e);
+            try(InputStream stream = new FileInputStream(file)) {
+                read(stream, map);
+            } catch(IOException e) {
+                creator().openPrivateChannel().flatMap(channel -> channel
+                    .sendMessage("Settings file is broken.")
+                    .addFile(file)
+                ).queue();
             }
         } else {
-            LOG.debug("Bot settings file does not exist; automatically setting up default values.");
+            LOG.debug("Bot settings file does not exist.");
         }
+    }
+
+    private void read(InputStream file, Map<String, Object> map) throws IOException {
+        LOG.debug("Reading settings file.");
+        map.putAll(mapper.readValue(file, REF_MAP));
     }
 
     public void save() {

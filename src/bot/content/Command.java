@@ -2,6 +2,7 @@ package bot.content;
 
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Message.*;
 
 import java.awt.Color;
 import java.io.*;
@@ -387,7 +388,7 @@ public enum Command {
         }
     },
 
-    GET_SETTINGS("settings", "Gets/sets the bot's setting file", OWNER_ONLY) {
+    SETTINGS("settings", "Gets/sets the bot's setting file", OWNER_ONLY) {
         {
             params = List.of(
             new CommandParam(false, "get/set", "get", "set")
@@ -396,18 +397,31 @@ public enum Command {
 
         @Override
         public void execute(Message message, List<String> args) {
-            switch(args.get(0)) {
-                case "get" -> {
-                    message.getAuthor().openPrivateChannel().flatMap(channel -> channel
-                        .sendMessage("The currently used bot settings file:")
-                        .addFile(settings.getFile())
-                    );
-
-                    break;
+            if(args.get(0).equals("get")) {
+                message.getAuthor().openPrivateChannel().flatMap(channel -> channel
+                    .sendMessage("The currently used bot settings file:")
+                    .addFile(settings.getFile())
+                ).queue();
+            } else {
+                Attachment file = null;
+                for(Attachment att : message.getAttachments()) {
+                    if(!att.isImage() && !att.isVideo()) {
+                        file = att;
+                    }
                 }
 
-                case "set" -> {
-                    break;
+                if(file == null) {
+                    message.getTextChannel()
+                        .sendMessage("Settings file must be a JSON file.")
+                        .queue();
+                } else {
+                    file.retrieveInputStream().thenAcceptAsync(input -> { try {
+                        settings.setFile(input);
+                    } catch(IOException e) {
+                        message.getTextChannel()
+                            .sendMessage("The sent settings file is broken or not a valid JSON file.")
+                            .queue();
+                    }});
                 }
             }
         }
