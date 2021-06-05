@@ -6,11 +6,15 @@ import bot.utils.exception.*;
 import org.slf4j.*;
 
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Message.*;
 import net.dv8tion.jda.api.events.message.*;
 import net.dv8tion.jda.api.hooks.*;
 import net.dv8tion.jda.api.requests.*;
+import net.dv8tion.jda.api.requests.restaction.*;
 
 import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.function.*;
 
 import static bot.AvantBot.*;
@@ -23,6 +27,8 @@ public class Messages extends ListenerAdapter {
     public static final int INVALID = 0x7fc00000;
     private static final String[] WARNS = { "once", "twice", "thrice", "four times", "too many times" };
 
+    public MessageAction render;
+
     public Messages() {
         LOG.debug("Initialized message listener.");
     }
@@ -30,9 +36,30 @@ public class Messages extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         Message msg = event.getMessage();
-        if(msg.getChannel() instanceof PrivateChannel || msg.getAuthor().isBot()) {
-            return;
+        List<Attachment> attachments = event.getMessage().getAttachments();
+
+        if(msg.getAuthor().isBot()) return;
+
+        for (Attachment attachment : attachments) {
+            String extension = attachment.getFileExtension();
+            if(extension != null && extension.equals("wrd")){
+                try {
+                    URL url = new URL(attachment.getUrl());
+                    BufferedReader read = new BufferedReader(new InputStreamReader(url.openStream()));
+
+                    String i;
+
+                    while ((i = read.readLine()) != null)
+                        tileRenderer.renderFile(tiles, msg, i);
+
+                    read.close();
+                } catch (Exception e) {
+                    LOG.error(e.toString());
+                }
+            }
         }
+
+        if(msg.getChannel() instanceof PrivateChannel) return;
 
         Member member = event.getMember();
 

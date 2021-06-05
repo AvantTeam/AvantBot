@@ -1,5 +1,6 @@
 package bot;
 
+import bot.content.*;
 import bot.content.minigames.*;
 import bot.core.*;
 
@@ -9,6 +10,7 @@ import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
+import java.awt.image.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -31,6 +33,8 @@ public class AvantBot {
     private static User creator;
 
     public static TicTacToe tictactoe;
+    public static TileRenderer tileRenderer;
+    public static Map<String, BufferedImage> tiles;
 
     static {
         File home = Paths.get(".").toFile();
@@ -84,16 +88,19 @@ public class AvantBot {
                 }
             }
 
+            tileRenderer = new TileRenderer();
             tictactoe = new TicTacToe();
+
+            tiles = tileRenderer.loadTiles();
 
             String last = (String)settings.remove("restart-message");
             if(last != null) {
                 String[] split = last.split("-");
                 jda.getGuildById(split[0])
-                    .getTextChannelById(split[1])
-                    .retrieveMessageById(split[2])
-                    .flatMap(msg -> msg.reply("Successfully restarted."))
-                    .queue();
+                        .getTextChannelById(split[1])
+                        .retrieveMessageById(split[2])
+                        .flatMap(msg -> msg.reply("Successfully restarted."))
+                        .queue();
             }
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
