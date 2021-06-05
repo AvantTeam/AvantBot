@@ -18,9 +18,9 @@ public class Settings {
 
     public static final TypeReference<Map<String, Object>> REF_MAP = new TypeReference<>() {};
 
-    private ObjectMapper mapper;
-    private File file;
-    private Map<String, Object> map;
+    private final ObjectMapper mapper;
+    private final File file;
+    private final Map<String, Object> map;
 
     public Settings() {
         LOG.debug("Initializing bot settings.");
@@ -53,6 +53,7 @@ public class Settings {
         if(!has("channels")) {
             Map<String, String> channels = new LinkedHashMap<>();
             channels.put("moderation", "785671460408655922");
+            channels.put("wastelands-rooms", "850733600411615252");
 
             put("channels", channels);
         }

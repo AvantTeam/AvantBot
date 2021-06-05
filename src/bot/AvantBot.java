@@ -97,10 +97,10 @@ public class AvantBot {
             if(last != null) {
                 String[] split = last.split("-");
                 jda.getGuildById(split[0])
-                        .getTextChannelById(split[1])
-                        .retrieveMessageById(split[2])
-                        .flatMap(msg -> msg.reply("Successfully restarted."))
-                        .queue();
+                    .getTextChannelById(split[1])
+                    .retrieveMessageById(split[2])
+                    .flatMap(msg -> msg.reply("Successfully restarted."))
+                    .queue();
             }
         } catch(LoginException e) {
             throw new RuntimeException("Bot failed to log in", e);
@@ -123,6 +123,10 @@ public class AvantBot {
 
     public static User self() {
         return jda.getSelfUser();
+    }
+
+    public static String channel(String name) {
+        return (String)settings.get("channels", Map.class).get(name);
     }
 
     public static User getUser(String id) {

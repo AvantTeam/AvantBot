@@ -23,7 +23,6 @@ public class Messages extends ListenerAdapter {
     private static final PrintStream PRINT = new PrintStream(STREAM);
 
     private static final String[] WARNS = { "once", "twice", "thrice", "four times", "too many times" };
-    public static final long wastelandsRoomChannelID = 850733600411615252L;
 
     public Messages() {
         LOG.debug("Initialized message listener.");
@@ -37,14 +36,20 @@ public class Messages extends ListenerAdapter {
         if(msg.getAuthor().isBot()) return;
 
         LOG.info(String.valueOf(attachments.size()));
-        if(event.getTextChannel().getIdLong() == wastelandsRoomChannelID && attachments.size() == 0){
+        if(event.getTextChannel().getId().equals(channel("wastelands-rooms")) && attachments.size() == 0){
             try {
                 msg.delete().queue();
-                msg.getAuthor().openPrivateChannel().complete().sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.").queue();
+                msg.getAuthor().openPrivateChannel().flatMap(channel -> channel
+                    .sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.")
+                ).queue();
             } catch(Exception e){
                 LOG.error(e.toString());
             }
         }
+
+        if(msg.getChannel() instanceof PrivateChannel) return;
+
+        Member member = event.getMember();
 
         for(Attachment attachment : attachments) {
             String extension = attachment.getFileExtension();
@@ -57,10 +62,12 @@ public class Messages extends ListenerAdapter {
                         }
                         msg.delete().queue();
                     } catch(Exception e) {
-                        if(event.getTextChannel().getIdLong() == wastelandsRoomChannelID){
+                        if(event.getTextChannel().getId().equals(channel("wastelands-rooms"))){
                             try {
                                 msg.delete().queue();
-                                msg.getAuthor().openPrivateChannel().complete().sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as `.wrd` files.").queue();
+                                msg.getAuthor().openPrivateChannel().flatMap(channel -> channel
+                                    .sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as `.wrd` files.")
+                                ).queue();
                             } catch(Exception err){
                                 LOG.error(err.toString());
                             }
@@ -73,10 +80,6 @@ public class Messages extends ListenerAdapter {
                 });
             }
         }
-
-        if(msg.getChannel() instanceof PrivateChannel) return;
-
-        Member member = event.getMember();
 
         LOG.debug("{}#{} in #{}: {}", member.getEffectiveName(), member.getUser().getDiscriminator(), event.getTextChannel().getName(), msg.getContentDisplay());
         try {
