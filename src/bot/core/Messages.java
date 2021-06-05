@@ -44,8 +44,9 @@ public class Messages extends ListenerAdapter {
                     try(BufferedReader reader = new BufferedReader(new InputStreamReader(input))){
                         String line;
                         while((line = reader.readLine()) != null){
-                            tileRenderer.renderFile(tiles, msg, line).queue();
+                            tileRenderer.renderFile(tiles, attachment, msg, line).queue();
                         }
+                        msg.delete().queue();
                     } catch(IOException e) {
                         event.getTextChannel()
                             .sendMessage("The sent `.wrd` file is broken or invalid.")

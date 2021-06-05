@@ -1,13 +1,16 @@
 package bot.content;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
 import javax.imageio.*;
 
+import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Message.*;
 
 import net.dv8tion.jda.api.requests.restaction.*;
 import org.slf4j.*;
@@ -16,7 +19,7 @@ import static bot.AvantBot.*;
 
 public class TileRenderer {
     private static final Logger LOG = LoggerFactory.getLogger(TileRenderer.class);
-    private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
+    private static final File outputFile = new File(ROOT_DIR, "tile-generated-image.png");
 
     public static File tilePath = new File(ROOT_DIR, "map-tiles/");
 
@@ -45,14 +48,15 @@ public class TileRenderer {
         return tiles;
     }
 
-    public MessageAction renderFile(Map<String, BufferedImage> tiles, Message message, String data) {
+    public MessageAction renderFile(Map<String, BufferedImage> tiles, Attachment attachment, Message message, String data) {
         synchronized(TileRenderer.class){
             LOG.debug("Creating preview for {}", data);
             try{
                 String[] split = data.split(";");
 
-                int[] size = Arrays.stream(split[0].split("\\.")).mapToInt(Integer::parseInt).toArray();
-                String[] tileData = Arrays.copyOfRange(split, 1, split.length);
+                String name = split[0];
+                int[] size = Arrays.stream(split[1].split("\\.")).mapToInt(Integer::parseInt).toArray();
+                String[] tileData = Arrays.copyOfRange(split, 2, split.length);
 
                 BufferedImage outputImage = new BufferedImage(size[0] * 16, size[1] * 16, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D graphics = outputImage.createGraphics();
@@ -64,13 +68,31 @@ public class TileRenderer {
                     }
                 }
 
-                STREAM.reset();
-                ImageIO.write(outputImage, "png", STREAM);
+                int w = outputImage.getWidth();
+                int h = outputImage.getHeight();
+
+                BufferedImage scaledOutputImage = new BufferedImage(w * 2, h * 2, BufferedImage.TYPE_INT_ARGB);
+
+                AffineTransform at = new AffineTransform();
+
+                at.scale(2.0, 2.0);
+                AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+
+                scaledOutputImage = scaleOp.filter(outputImage, scaledOutputImage);
+
+                ImageIO.write(scaledOutputImage, "png", outputFile);
 
                 graphics.dispose();
-                return message.getTextChannel()
-                    .sendMessage("Room preview:")
-                    .addFile(STREAM.toByteArray(), "image.png");
+
+                EmbedBuilder eb = new EmbedBuilder();
+
+                eb.setTitle(name, null);
+                eb.setDescription("Preview:");
+                eb.setColor(new Color(121, 239, 148));
+                eb.setAuthor(message.getAuthor().getName(), message.getAuthor().getAvatarUrl(), message.getAuthor().getAvatarUrl());
+                eb.setImage("attachment://" + outputFile.getName());
+
+                return message.getTextChannel().sendFile(attachment.downloadToFile().get()).addFile(outputFile).embed(eb.build());
             }catch(Exception e){
                 throw new RuntimeException(e);
             }
