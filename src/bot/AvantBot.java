@@ -52,7 +52,7 @@ public class AvantBot {
     }
 
     public static void main(String[] args) {
-        String token = System.getProperty("bot.token");
+        String token = System.getenv("AVANT_BOT_TOKEN");
         if(token == null) {
             throw new IllegalStateException("Property 'bot.token' not found.");
         }
@@ -77,7 +77,7 @@ public class AvantBot {
                 .build()
                 .awaitReady();
 
-            String id = System.getProperty("bot.creator");
+            String id = System.getenv("DISCORD_ID");
             if(id != null) {
                 LOG.debug("Creator ID: {}.", id);
                 creator = getUser(id);
