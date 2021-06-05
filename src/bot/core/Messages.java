@@ -37,6 +37,16 @@ public class Messages extends ListenerAdapter {
 
         if(msg.getAuthor().isBot()) return;
 
+        LOG.info(String.valueOf(attachments.size()));
+        if(event.getTextChannel().getIdLong() == wastelandsRoomChannelID && attachments.size() == 0){
+            try {
+                msg.delete().queue();
+                msg.getAuthor().openPrivateChannel().complete().sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.").queue();
+            } catch(Exception e){
+                LOG.error(e.toString());
+            }
+        }
+
         for(Attachment attachment : attachments) {
             String extension = attachment.getFileExtension();
             if(extension != null && extension.equals("wrd")){
@@ -48,12 +58,12 @@ public class Messages extends ListenerAdapter {
                         }
                         msg.delete().queue();
                     } catch(IOException e) {
-                        if(event.getChannelType().getId() == wastelandsRoomChannelID){
-                            msg.delete().queue();
-                            if(msg.getAuthor().hasPrivateChannel()){
-                                msg.getAuthor().openPrivateChannel().queue(channel -> {
-                                    channel.sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.").queue();
-                                });
+                        if(event.getTextChannel().getIdLong() == wastelandsRoomChannelID){
+                            try {
+                                msg.delete().queue();
+                                msg.getAuthor().openPrivateChannel().complete().sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.").queue();
+                            } catch(Exception err){
+                                LOG.error(err.toString());
                             }
                         } else {
                             event.getTextChannel()
