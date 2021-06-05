@@ -22,7 +22,6 @@ public class Messages extends ListenerAdapter {
     private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
     private static final PrintStream PRINT = new PrintStream(STREAM);
 
-    public static final int INVALID = 0x7fc00000;
     private static final String[] WARNS = { "once", "twice", "thrice", "four times", "too many times" };
     public static final long wastelandsRoomChannelID = 850733600411615252L;
 
@@ -54,7 +53,7 @@ public class Messages extends ListenerAdapter {
                     try(BufferedReader reader = new BufferedReader(new InputStreamReader(input))){
                         String line;
                         while((line = reader.readLine()) != null){
-                            tileRenderer.renderFile(tiles, attachment, msg, line).queue();
+                            tileRenderer.renderFile(tiles, attachment, msg, line).thenAccept(RestAction::queue);
                         }
                         msg.delete().queue();
                     } catch(Exception e) {
@@ -67,8 +66,8 @@ public class Messages extends ListenerAdapter {
                             }
                         } else {
                             event.getTextChannel()
-                                    .sendMessage("The sent `.wrd` file is broken or invalid.")
-                                    .queue();
+                                .sendMessage("The sent `.wrd` file is broken or invalid.")
+                                .queue();
                         }
                     }
                 });
@@ -134,8 +133,8 @@ public class Messages extends ListenerAdapter {
         );
     }
 
-    public int validNumber(Message message, String number, int min, int max) {
-        Integer result = assertMessage(
+    public Integer validNumber(Message message, String number, int min, int max) {
+        return assertMessage(
             message,
             () -> Integer.parseInt(number),
             (Integer res, Member member) -> res >= min && res <= max,
@@ -147,8 +146,6 @@ public class Messages extends ListenerAdapter {
                 }
             }
         );
-
-        return result != null ? result.intValue() : INVALID;
     }
 
     public <T> T assertMessage(Message message, Supplier<T> supplier, BiPredicate<T, Member> predicate, BiFunction<T, Member, String> reply) {

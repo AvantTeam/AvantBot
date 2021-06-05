@@ -8,10 +8,10 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
 public abstract class Minigame<T extends Minigame<T, M>, M extends Minigame<T, M>.MinigameModule<?>> {
-    private Map<String, M> modules = new HashMap<>();
+    private final Map<String, M> modules = new HashMap<>();
     protected List<Command> commands = List.of();
 
-    private static List<Minigame<?, ?>> all = new ArrayList<>();
+    private static final List<Minigame<?, ?>> all = new ArrayList<>();
 
     {
         all.add(this);
@@ -73,11 +73,10 @@ public abstract class Minigame<T extends Minigame<T, M>, M extends Minigame<T, M
         }
 
         public RestAction<Message> notifyTurn(Message message) {
-            int[] c = {current};
             return message.getTextChannel()
                 .sendMessage(String.format("Now is your turn, %s!\nIf you don't respond in 1 minute, the game will automatically end.", getCurrent().getAsMention()))
                 .delay(1, TimeUnit.MINUTES)
-                .flatMap(msg -> c[0] == current, msg -> {
+                .flatMap(msg -> {
                     stop(msg.getGuild());
                     return unresponsive(msg, get(current));
                 });
