@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.hooks.*;
 import net.dv8tion.jda.api.requests.*;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.function.*;
 
@@ -25,6 +24,7 @@ public class Messages extends ListenerAdapter {
 
     public static final int INVALID = 0x7fc00000;
     private static final String[] WARNS = { "once", "twice", "thrice", "four times", "too many times" };
+    public static final long wastelandsRoomChannelID = 850733600411615252L;
 
     public Messages() {
         LOG.debug("Initialized message listener.");
@@ -48,9 +48,18 @@ public class Messages extends ListenerAdapter {
                         }
                         msg.delete().queue();
                     } catch(IOException e) {
-                        event.getTextChannel()
-                            .sendMessage("The sent `.wrd` file is broken or invalid.")
-                            .queue();
+                        if(event.getChannelType().getId() == wastelandsRoomChannelID){
+                            msg.delete().queue();
+                            if(msg.getAuthor().hasPrivateChannel()){
+                                msg.getAuthor().openPrivateChannel().queue(channel -> {
+                                    channel.sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.").queue();
+                                });
+                            }
+                        } else {
+                            event.getTextChannel()
+                                    .sendMessage("The sent `.wrd` file is broken or invalid.")
+                                    .queue();
+                        }
                     }
                 });
             }
