@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.Message.*;
 import net.dv8tion.jda.api.events.message.*;
 import net.dv8tion.jda.api.hooks.*;
 import net.dv8tion.jda.api.requests.*;
-import net.dv8tion.jda.api.requests.restaction.*;
 
 import java.io.*;
 import java.net.*;
@@ -27,8 +26,6 @@ public class Messages extends ListenerAdapter {
     public static final int INVALID = 0x7fc00000;
     private static final String[] WARNS = { "once", "twice", "thrice", "four times", "too many times" };
 
-    public MessageAction render;
-
     public Messages() {
         LOG.debug("Initialized message listener.");
     }
@@ -40,22 +37,21 @@ public class Messages extends ListenerAdapter {
 
         if(msg.getAuthor().isBot()) return;
 
-        for (Attachment attachment : attachments) {
+        for(Attachment attachment : attachments) {
             String extension = attachment.getFileExtension();
             if(extension != null && extension.equals("wrd")){
-                try {
-                    URL url = new URL(attachment.getUrl());
-                    BufferedReader read = new BufferedReader(new InputStreamReader(url.openStream()));
-
-                    String i;
-
-                    while ((i = read.readLine()) != null)
-                        tileRenderer.renderFile(tiles, msg, i);
-
-                    read.close();
-                } catch (Exception e) {
-                    LOG.error(e.toString());
-                }
+                attachment.retrieveInputStream().thenAcceptAsync(input -> {
+                    try(BufferedReader reader = new BufferedReader(new InputStreamReader(input))){
+                        String line;
+                        while((line = reader.readLine()) != null){
+                            tileRenderer.renderFile(tiles, msg, line).queue();
+                        }
+                    } catch(IOException e) {
+                        event.getTextChannel()
+                            .sendMessage("The sent `.wrd` file is broken or invalid.")
+                            .queue();
+                    }
+                });
             }
         }
 
@@ -65,7 +61,7 @@ public class Messages extends ListenerAdapter {
 
         LOG.debug("{}#{} in #{}: {}", member.getEffectiveName(), member.getUser().getDiscriminator(), event.getTextChannel().getName(), msg.getContentDisplay());
         try {
-            commands.handle(msg, event.getMember());
+            commands.handle(msg);
         } catch(Throwable t) {
             if(t instanceof CommandException ex) {
                 msg.getTextChannel()

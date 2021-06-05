@@ -21,7 +21,7 @@ public class Commands {
         LOG.debug("Initialized command handler.");
     }
 
-    public void handle(Message message, Member member) {
+    public void handle(Message message) {
         String text = message.getContentRaw();
         String cont;
         String pref = prefix();
@@ -92,7 +92,7 @@ public class Commands {
                     for(; c < param.reserved.size(); c++) {
                         if(param.reserved.size() > 1 && c == param.reserved.size() - 1) builder.append("and ");
 
-                        builder.append("`" + param.reserved.get(c) + "`");
+                        builder.append("`").append(param.reserved.get(c)).append("`");
 
                         if(param.reserved.size() > 2 && c < param.reserved.size() - 1) {
                             builder.append(", ");
@@ -103,10 +103,7 @@ public class Commands {
 
                     message.getTextChannel()
                         .sendMessage(String.format("Invalid parameter `%d`: `%s`. Only %s %s accepted.",
-                            i,
-                            arg,
-                            builder.toString(),
-                            c == 0 ? "is" : "are"
+                            i, arg, builder, "are"
                         ))
                         .queue();
 

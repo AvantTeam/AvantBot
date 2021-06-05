@@ -11,7 +11,7 @@ import javax.imageio.*;
 import bot.content.*;
 
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.requests.*;
+import net.dv8tion.jda.api.requests.restaction.*;
 
 import static bot.AvantBot.*;
 
@@ -59,7 +59,7 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
 
         private Member winner;
         private boolean draw;
-        private Map<String, BufferedImage> checkMap = new HashMap<>();
+        private final Map<String, BufferedImage> checkMap = new HashMap<>();
 
         public TicTacToeModule(List<Member> players) {
             super(players);
@@ -69,11 +69,11 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
 
         public void init(int width) {
             this.width = width;
-            count = VALUES.get(Integer.valueOf(width));
+            count = VALUES.get(width);
             tiles = new Member[width][width];
         }
 
-        public RestAction<Message> sendImage(Message message) {
+        public MessageAction sendImage(Message message) {
             synchronized(TicTacToe.class) {
                 try {
                     BufferedImage base = new BufferedImage(width * 64, width * 64, BufferedImage.TYPE_INT_ARGB);
@@ -129,8 +129,6 @@ public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
                 message.getTextChannel()
                     .sendMessage(String.format("Tile `(%d, %d)` is already checked by %s", x + 1, y + 1, tile.getEffectiveName()))
                     .queue();
-
-                return;
             } else {
                 tiles[x][y] = tile = member;
                 current++;

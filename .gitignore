@@ -10,6 +10,7 @@ build/
 
 # IDE workspace
 .vscode/
+.idea/
 
 # Bot
 classes/
