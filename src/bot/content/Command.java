@@ -471,16 +471,22 @@ public enum Command {
                             .queue();
                     }
                 } else {
-                    StringBuilder builder = new StringBuilder()
-                        .append("No such property `")
-                        .append(lastArg)
-                        .append("` in `")
-                        .append(config)
-                        .append("`.");
+                    if(config.isEmpty()) {
+                        message.getTextChannel()
+                            .sendMessage("No configuration given.")
+                            .queue();
+                    } else {
+                        StringBuilder builder = new StringBuilder()
+                            .append("No such property `")
+                            .append(lastArg)
+                            .append("` in `")
+                            .append(config)
+                            .append("`.");
 
-                    message.getTextChannel()
-                        .sendMessage(builder)
-                        .queue();
+                        message.getTextChannel()
+                            .sendMessage(builder)
+                            .queue();
+                    }
                 }
             }
         }
