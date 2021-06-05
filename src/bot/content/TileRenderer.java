@@ -53,7 +53,7 @@ public class TileRenderer {
 
             int x = 0;
             int y = 0;
-            LOG.debug(tiles.toString());
+            //LOG.debug(tiles.toString());
             for (String row : tileData) {
                 String[] rowData = row.split("\\.");
                 for (String tile : rowData) {
