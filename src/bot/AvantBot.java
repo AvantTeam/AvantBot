@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
+import java.awt.image.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -33,6 +34,7 @@ public class AvantBot {
 
     public static TicTacToe tictactoe;
     public static TileRenderer tileRenderer;
+    public static Map<String, BufferedImage> tiles;
 
     static {
         File home = Paths.get(".").toFile();
@@ -89,7 +91,7 @@ public class AvantBot {
             tileRenderer = new TileRenderer();
             tictactoe = new TicTacToe();
 
-            tileRenderer.loadTiles();
+            tiles = tileRenderer.loadTiles();
 
             String last = (String)settings.remove("restart-message");
             if(last != null) {

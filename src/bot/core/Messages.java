@@ -50,8 +50,7 @@ public class Messages extends ListenerAdapter {
                     String i;
 
                     while ((i = read.readLine()) != null)
-                        render = tileRenderer.renderFile(msg, i);
-                        if(render != null) render.queue();
+                        tileRenderer.renderFile(tiles, msg, i);
 
                     read.close();
                 } catch (Exception e) {

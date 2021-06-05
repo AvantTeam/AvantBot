@@ -19,9 +19,10 @@ public class TileRenderer {
     private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
 
     public static File tilePath = new File(ROOT_DIR, "map-tiles/");
-    public Map<String, BufferedImage> tiles = new HashMap<>();
 
-    public void loadTiles(){
+    public Map<String, BufferedImage> loadTiles(){
+        Map<String, BufferedImage> tiles = new HashMap<>();
+
         File[] directoryListing = tilePath.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
@@ -36,9 +37,11 @@ public class TileRenderer {
         } else {
             LOG.error("The given tile directory isn't a valid directory!");
         }
+
+        return tiles;
     }
 
-    public MessageAction renderFile(Message message, String data){
+    public void renderFile(Map<String, BufferedImage> tiles, Message message, String data){
         try {
             String[] splitData = data.split(";");
 
@@ -50,6 +53,7 @@ public class TileRenderer {
 
             int x = 0;
             int y = 0;
+            LOG.debug(tiles.toString());
             for (String row : tileData) {
                 String[] rowData = row.split("\\.");
                 for (String tile : rowData) {
@@ -63,11 +67,9 @@ public class TileRenderer {
             ImageIO.write(outputImage, "png", STREAM);
 
             graphics.dispose();
-            return message.getTextChannel().sendMessage("Room preview:").addFile(STREAM.toByteArray(), "image.png");
+            message.getTextChannel().sendMessage("Room preview:").addFile(STREAM.toByteArray(), "image.png").queue();
         } catch(Exception e){
             LOG.error(e.toString());
         }
-
-        return null;
     }
 }
