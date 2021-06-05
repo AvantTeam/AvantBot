@@ -19,9 +19,7 @@ import static bot.content.Command.CommandPermission.*;
 public enum Command {
     HELP("help", "Shows all server commands that you may use.", DEFAULT) {
         {
-            params = List.of(
-            new CommandParam(true, "command")
-            );
+            params = List.of(new CommandParam(true, "command"));
         }
 
         @Override
@@ -72,10 +70,7 @@ public enum Command {
 
     JAVAC("javac", "Compiles a Java source file for release 8.", DEFAULT) {
         {
-            params = List.of(
-            new CommandParam(false, "classname"),
-            new CommandParam(false, "program...")
-            );
+            params = List.of(new CommandParam(false, "classname"), new CommandParam(false, "program..."));
         }
 
         @Override
@@ -93,7 +88,7 @@ public enum Command {
                 nameRaw = name.substring(0, name.lastIndexOf(".java"));
             }
 
-            content.replaceFirst("package (.|\\s)+;", "");
+            content = content.replaceFirst("package (.|\\s)+;", "");
 
             File parent = new File(CLASSES_DIR.getAbsolutePath(), nameRaw);
             parent.mkdirs();
@@ -176,21 +171,18 @@ public enum Command {
 
     TICTACTOE("ttt", "Plays a tictactoe game.", DEFAULT) {
         {
-            params = List.of(
-            new CommandParam(false, "member"),
-            new CommandParam(false, "width")
-            );
+            params = List.of(new CommandParam(false, "member"), new CommandParam(false, "width"));
         }
 
         @Override
         public void execute(Message message, List<String> args) {
             Member member = message.getMember();
             Member opponent;
-            int width;
+            Integer width;
 
             if(
                 (opponent = messages.memberExists(message, args.get(0))) != null &&
-                (width = messages.validNumber(message, args.get(1), 3, 8)) != Messages.INVALID
+                (width = messages.validNumber(message, args.get(1), 3, 8)) != null
             ) {
                 if(member.getIdLong() == opponent.getIdLong()) {
                     message
@@ -211,8 +203,7 @@ public enum Command {
                             ))
                             .flatMap(module::sendImage)
                             .flatMap(msg -> message.getTextChannel().sendMessage(String.format(
-                                "Use %s to check the board. Note that `(1, 1)` is the board's top-left corner.",
-                                Command.TICTACTOE_CHECK.toString()
+                                "Use %s to check the board. Note that `(1, 1)` is the board's top-left corner.", Command.TICTACTOE_CHECK
                             )))
                             .flatMap(module::notifyTurn)
                             .queue();
@@ -226,10 +217,7 @@ public enum Command {
 
     TICTACTOE_CHECK("tttc", DEFAULT) {
         {
-            params = List.of(
-            new CommandParam(false, "column"),
-            new CommandParam(false, "row")
-            );
+            params = List.of(new CommandParam(false, "column"), new CommandParam(false, "row"));
         }
 
         @Override
@@ -247,11 +235,8 @@ public enum Command {
                     },
 
                     (int[] pos, Member m) ->
-                        pos[0] <= module.getWidth() && pos[0] <= module.getWidth() &&
-                        pos[0] > 0 && pos[0] > 0 &&
-
-                        pos[1] <= module.getWidth() && pos[1] <= module.getWidth() &&
-                        pos[1] > 0 && pos[1] > 0,
+                        pos[0] <= module.getWidth() && pos[0] > 0 &&
+                        pos[1] <= module.getWidth() && pos[1] > 0,
 
                     (int[] pos, Member m) -> String.format(
                         "%s, `(%s, %s)` must be inclusively between `(1, 1)` and `(%d, %d)`.",
@@ -281,10 +266,7 @@ public enum Command {
 
     WARN("warn", "Warns a server member.", ADMIN_ONLY) {
         {
-            params = List.of(
-            new CommandParam(false, "member"),
-            new CommandParam(true, "reason...")
-            );
+            params = List.of(new CommandParam(false, "member"), new CommandParam(true, "reason..."));
         }
 
         @Override
@@ -305,9 +287,7 @@ public enum Command {
 
     CLEARWARN("clearwarn", "Clears a server member's warnings", ADMIN_ONLY) {
         {
-            params = List.of(
-            new CommandParam(false, "member")
-            );
+            params = List.of(new CommandParam(false, "member"));
         }
 
         @Override
@@ -328,9 +308,7 @@ public enum Command {
 
     WARNINGS("warnings", "View a server member's or your warnings", ADMIN_ONLY) {
         {
-            params = List.of(
-            new CommandParam(true, "member")
-            );
+            params = List.of(new CommandParam(true, "member"));
         }
 
         @Override
@@ -388,11 +366,129 @@ public enum Command {
         }
     },
 
-    SETTINGS("settings", "Gets/sets the bot's setting file", OWNER_ONLY) {
+    CONFIG("config", "Gets/sets the bot's settings configuration", ADMIN_ONLY) {
         {
             params = List.of(
-            new CommandParam(false, "get/set", "get", "set")
+                new CommandParam(false, "get/set", "get", "set"),
+                new CommandParam(true, "value"),
+                new CommandParam(false, "key...")
             );
+        }
+
+        @Override
+        public void execute(Message message, List<String> args) {
+            String access = args.remove(0);
+            Object object = null;
+            Object value = null;
+
+            if(access.equals("set")) value = args.remove(0);
+
+            StringBuilder config = new StringBuilder();
+            String lastArg = null;
+            for(int i = 0; i < args.size(); i++) {
+                String arg = args.get(i);
+
+                if(object == null) {
+                    object = settings.get(arg);
+                } else if(object instanceof Map<?, ?> map) {
+                    try {
+                        object = map.get(arg);
+                    } catch(ClassCastException e) {
+                        object = null;
+                    }
+                } else {
+                    object = null;
+                }
+
+                if(object == null) {
+                    if(config.isEmpty()) {
+                        StringBuilder builder = new StringBuilder()
+                            .append("No such property `")
+                            .append(arg)
+                            .append("`.");
+
+                        message.getTextChannel()
+                            .sendMessage(builder)
+                            .queue();
+                    } else {
+                        StringBuilder builder = new StringBuilder()
+                            .append("No such property `")
+                            .append(arg)
+                            .append("` in configuration `")
+                            .append(config)
+                            .append("`.");
+
+                        message.getTextChannel()
+                            .sendMessage(builder)
+                            .queue();
+                    }
+
+                    return;
+                } else {
+                    if(i > 0) config.append(".");
+                    config.append(arg);
+                }
+
+                lastArg = arg;
+            }
+
+            if(access.equals("get")) {
+                StringBuilder builder = new StringBuilder()
+                    .append("Configuration `")
+                    .append(config)
+                    .append("` is currently `")
+                    .append(object)
+                    .append("`.");
+
+                message.getTextChannel()
+                    .sendMessage(builder)
+                    .queue();
+            } else {
+                if(object instanceof Map map) {
+                    try {
+                        map.put(lastArg, object);
+
+                        StringBuilder builder = new StringBuilder()
+                            .append("`")
+                            .append(config)
+                            .append("` is now `")
+                            .append(value)
+                            .append("`.");
+
+                        message.getTextChannel()
+                            .sendMessage(builder)
+                            .queue();
+                    } catch(Throwable e) {
+                        StringBuilder builder = new StringBuilder()
+                            .append("Value `")
+                            .append(value)
+                            .append("` isn't assignable to `")
+                            .append(config)
+                            .append("`.");
+
+                        message.getTextChannel()
+                            .sendMessage(builder)
+                            .queue();
+                    }
+                } else {
+                    StringBuilder builder = new StringBuilder()
+                        .append("No such property `")
+                        .append(lastArg)
+                        .append("` in `")
+                        .append(config)
+                        .append("`.");
+
+                    message.getTextChannel()
+                        .sendMessage(builder)
+                        .queue();
+                }
+            }
+        }
+    },
+
+    SETTINGS("settings", "Gets/sets the bot's settings file", OWNER_ONLY) {
+        {
+            params = List.of(new CommandParam(false, "get/set", "get", "set"));
         }
 
         @Override
@@ -418,7 +514,7 @@ public enum Command {
                         .sendMessage("Settings file must be a JSON file.")
                         .queue();
                 } else {
-                    file.retrieveInputStream().thenAcceptAsync(input -> { try {
+                    file.retrieveInputStream().thenAccept(input -> { try {
                         settings.setFile(input);
                         message.getTextChannel()
                             .sendMessage("Successfully set the settings file.")
@@ -507,7 +603,8 @@ public enum Command {
     public String toString() {
         StringBuilder buf = new StringBuilder()
             .append("`")
-            .append(prefix() + name)
+            .append(prefix())
+            .append(name)
             .append(" ");
 
         for(int i = 0; i < params.size(); i++) {
@@ -521,7 +618,7 @@ public enum Command {
         return buf.toString();
     }
 
-    public class CommandParam {
+    public static class CommandParam {
         public final boolean optional;
         public final String name;
         public final List<String> reserved;
@@ -564,11 +661,7 @@ public enum Command {
 
                 return
                     user.getIdLong() == creator().getIdLong() ||
-                    (
-                        owner != null
-                        ?   owner.getIdLong() == user.getIdLong()
-                        :   false
-                    );
+                    owner != null && owner.getIdLong() == user.getIdLong();
             }
         };
 
