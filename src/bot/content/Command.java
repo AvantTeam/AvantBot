@@ -446,7 +446,7 @@ public enum Command {
             } else {
                 if(object instanceof Map map) {
                     try {
-                        map.put(lastArg, object);
+                        map.put(lastArg, value);
 
                         StringBuilder builder = new StringBuilder()
                             .append("`")
