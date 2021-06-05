@@ -57,11 +57,11 @@ public class Messages extends ListenerAdapter {
                             tileRenderer.renderFile(tiles, attachment, msg, line).queue();
                         }
                         msg.delete().queue();
-                    } catch(IOException e) {
+                    } catch(Exception e) {
                         if(event.getTextChannel().getIdLong() == wastelandsRoomChannelID){
                             try {
                                 msg.delete().queue();
-                                msg.getAuthor().openPrivateChannel().complete().sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as .wrd files.").queue();
+                                msg.getAuthor().openPrivateChannel().complete().sendMessage("Only send valid room files in the #wastelands-rooms channel. Send them as `.wrd` files.").queue();
                             } catch(Exception err){
                                 LOG.error(err.toString());
                             }
