@@ -9,7 +9,7 @@ while [ true ]; do
     ./gradlew deploy
 
     # Run the .jar file
-    java --enable-preview -jar build/libs/AvantBot.jar #-Dbot.token=$AVANT_BOT_TOKEN -Dbot.creator=$DISCORD_ID
+    java --enable-preview -jar build/libs/AvantBot.jar
 
     # If successfully or forcefully exited, stop
     excode=$?
