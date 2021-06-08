@@ -366,67 +366,71 @@ public enum Command {
         }
     },
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     CONFIG("config", "Gets/sets the bot's settings configuration", ADMIN_ONLY) {
         {
             params = List.of(
                 new CommandParam(false, "get/set", "get", "set"),
-                new CommandParam(true, "value"),
-                new CommandParam(false, "key...")
+                new CommandParam(false, "key..."),
+                new CommandParam(true, "value")
             );
         }
 
         @Override
         public void execute(Message message, List<String> args) {
             String access = args.remove(0);
+            boolean set;
             Object object = null;
             Object value = null;
 
-            if(access.equals("set")) value = args.remove(0);
+            if(set = access.equals("set")) value = args.remove(args.size() - 1);
 
             StringBuilder config = new StringBuilder();
             String lastArg = null;
             for(int i = 0; i < args.size(); i++) {
                 String arg = args.get(i);
 
-                if(object == null) {
-                    object = settings.get(arg);
-                } else if(object instanceof Map<?, ?> map) {
-                    try {
-                        object = map.get(arg);
-                    } catch(ClassCastException e) {
+                if(!set || i < args.size() - 1){
+                    if(object == null) {
+                        object = settings.get(arg);
+                    } else if(object instanceof Map map) {
+                        try {
+                            object = map.get(arg);
+                        } catch(ClassCastException e) {
+                            object = null;
+                        }
+                    } else {
                         object = null;
                     }
-                } else {
-                    object = null;
-                }
 
-                if(object == null) {
-                    if(config.isEmpty()) {
-                        StringBuilder builder = new StringBuilder()
-                            .append("No such property `")
-                            .append(arg)
-                            .append("`.");
+                    if(object == null) {
+                        if(config.isEmpty()) {
+                            StringBuilder builder = new StringBuilder()
+                                .append("No such property `")
+                                .append(arg)
+                                .append("`.");
 
-                        message.getTextChannel()
-                            .sendMessage(builder)
-                            .queue();
+                            message.getTextChannel()
+                                .sendMessage(builder)
+                                .queue();
+                        } else {
+                            StringBuilder builder = new StringBuilder()
+                                .append("No such property `")
+                                .append(arg)
+                                .append("` in configuration `")
+                                .append(config)
+                                .append("`.");
+
+                            message.getTextChannel()
+                                .sendMessage(builder)
+                                .queue();
+                        }
+
+                        return;
                     } else {
-                        StringBuilder builder = new StringBuilder()
-                            .append("No such property `")
-                            .append(arg)
-                            .append("` in configuration `")
-                            .append(config)
-                            .append("`.");
-
-                        message.getTextChannel()
-                            .sendMessage(builder)
-                            .queue();
+                        if(i > 0) config.append(".");
+                        config.append(arg);
                     }
-
-                    return;
-                } else {
-                    if(i > 0) config.append(".");
-                    config.append(arg);
                 }
 
                 lastArg = arg;
