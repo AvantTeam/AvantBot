@@ -7,25 +7,25 @@ import java.util.function.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.*;
 
-public abstract class Minigame<T extends Minigame<T>> {
-    private final Map<String, MinigameModule<?>> modules = new HashMap<>();
+public abstract class Minigame<T extends Minigame<T, M>, M extends Minigame<T, M>.MinigameModule<?>> {
+    private final Map<String, M> modules = new HashMap<>();
     protected List<Command> commands = List.of();
 
-    private static final List<Minigame<?>> all = new ArrayList<>();
+    private static final List<Minigame<?, ?>> all = new ArrayList<>();
 
     {
         all.add(this);
     }
 
-    public static List<Minigame<?>> getAll() {
+    public static List<Minigame<?, ?>> getAll() {
         return all;
     }
 
-    public MinigameModule<?> current(Guild guild) {
+    public M current(Guild guild) {
         return modules.get(guild.getId());
     }
 
-    public MinigameModule<?> start(Member... players) {
+    public M start(Member... players) {
         if(players == null || players.length <= 0) throw new IllegalArgumentException("There must be one player or more.");
 
         Guild guild = players[0].getGuild();
@@ -50,7 +50,7 @@ public abstract class Minigame<T extends Minigame<T>> {
         }
     }
 
-    public abstract MinigameModule<?> create(Member... players);
+    public abstract M create(Member... players);
 
     public abstract class MinigameModule<S> {
         private final List<Member> players;

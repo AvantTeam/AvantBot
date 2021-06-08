@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.requests.restaction.*;
 
 import static bot.AvantBot.*;
 
-public class TicTacToe extends Minigame<TicTacToe> {
+public class TicTacToe extends Minigame<TicTacToe, TicTacToe.TicTacToeModule> {
     public static final BufferedImage TILE;
     public static final BufferedImage CHECK_X;
     public static final BufferedImage CHECK_O;
@@ -52,17 +52,7 @@ public class TicTacToe extends Minigame<TicTacToe> {
         return new TicTacToeModule(List.of(players));
     }
 
-    @Override
-    public TicTacToeModule start(Member... players){
-        return (TicTacToeModule)super.start(players);
-    }
-
-    @Override
-    public TicTacToeModule current(Guild guild){
-        return (TicTacToeModule)super.current(guild);
-    }
-
-    public class TicTacToeModule extends Minigame<TicTacToe>.MinigameModule<int[]> {
+    public class TicTacToeModule extends Minigame<TicTacToe, TicTacToeModule>.MinigameModule<int[]> {
         protected Member[][] tiles;
         protected int width;
         protected int count;
@@ -113,7 +103,7 @@ public class TicTacToe extends Minigame<TicTacToe> {
             }
         }
 
-        public int getWidth(){
+        public int getWidth() {
             return width;
         }
 
