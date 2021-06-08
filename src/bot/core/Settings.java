@@ -52,6 +52,7 @@ public class Settings {
         }
         if(!has("channels")) {
             Map<String, String> channels = new LinkedHashMap<>();
+            channels.put("workspace-bots", "821949325902086154");
             channels.put("moderation", "785671460408655922");
             channels.put("wastelands-rooms", "850733600411615252");
 
@@ -124,11 +125,11 @@ public class Settings {
         return map.get(key);
     }
 
-    public Object remove(String key) {
+    public <T> T remove(String key) {
         var obj = map.remove(key);
         save();
 
-        return obj;
+        return (T)obj;
     }
 
     public boolean has(String key) {

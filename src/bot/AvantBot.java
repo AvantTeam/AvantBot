@@ -93,7 +93,7 @@ public class AvantBot {
 
             tiles = tileRenderer.loadTiles();
 
-            String last = (String)settings.remove("restart-message");
+            String last = settings.remove("restart-message");
             if(last != null) {
                 String[] split = last.split("-");
                 jda.getGuildById(split[0])
