@@ -58,6 +58,13 @@ task run(type: JavaExec, dependsOn: classes) {
     }
 }
 
+task stage { doFirst {
+    exec {
+        workingDir rootDir
+        commandLine './run'
+    }
+}}
+
 tasks.withType(JavaCompile) {
     targetCompatibility = 15
     sourceCompatibility = 15
