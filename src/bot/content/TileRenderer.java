@@ -89,7 +89,7 @@ public class TileRenderer {
                     EmbedBuilder eb = new EmbedBuilder()
                         .setTitle(name, null)
                         .setDescription("Preview:")
-                        .setColor(new Color(121, 239, 148))
+                        .setColor(Command.INFO)
                         .setAuthor(message.getAuthor().getName(), null, message.getAuthor().getAvatarUrl())
                         .setImage("attachment://" + outputFile.getName());
 

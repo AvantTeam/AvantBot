@@ -81,6 +81,7 @@ public class Messages extends ListenerAdapter {
             }
         }
 
+        assert member != null;
         LOG.debug("{}#{} in #{}: {}", member.getEffectiveName(), member.getUser().getDiscriminator(), event.getTextChannel().getName(), msg.getContentDisplay());
         try {
             commands.handle(msg);
@@ -182,13 +183,5 @@ public class Messages extends ListenerAdapter {
         if(strip.startsWith("!")) strip = strip.substring(1);
 
         return getUser(strip);
-    }
-
-    public Role parseRole(Guild guild, String role) {
-        String strip = role;
-        if(strip.startsWith("<&") && strip.endsWith(">")) strip = strip.substring(2, role.length() - 1);
-        if(strip.startsWith("!")) strip = strip.substring(1);
-
-        return getRole(guild, strip);
     }
 }

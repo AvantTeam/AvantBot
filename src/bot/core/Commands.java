@@ -15,7 +15,7 @@ import static bot.AvantBot.*;
 public class Commands {
     private static final Logger LOG = LoggerFactory.getLogger(Commands.class);
 
-    private final Pattern splitter = Pattern.compile("(?:```(?:.|[\\s\\S])*```)|(?:\".+\")|(?:[^\\s]+)");
+    private final Pattern splitter = Pattern.compile("(?=```(?:.|[\\s\\S])*```)|(?=\".+\")|(?=[^\\s]+)");
 
     public Commands() {
         LOG.debug("Initialized command handler.");
@@ -55,7 +55,7 @@ public class Commands {
             if(!command.hidden) {
                 exec(message, command, split);
             } else {
-                Minigame<?, ?>.MinigameModule<?> module = null;
+                Minigame<?>.MinigameModule<?> module = null;
 
                 for(var game : Minigame.getAll()) {
                     module = game.current(message.getGuild());

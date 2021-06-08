@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.zip.*;
 
 import bot.content.minigames.TicTacToe.*;
-import bot.core.*;
 import bot.utils.exception.*;
 
 import static bot.AvantBot.*;
@@ -26,6 +25,8 @@ public enum Command {
         public void execute(Message message, List<String> args) {
             Guild guild = message.getGuild();
             Member member = message.getMember();
+
+            assert member != null;
 
             EmbedBuilder builder = new EmbedBuilder()
                 .setTimestamp(message.getTimeCreated())
@@ -91,7 +92,7 @@ public enum Command {
             content = content.replaceFirst("package (.|\\s)+;", "");
 
             File parent = new File(CLASSES_DIR.getAbsolutePath(), nameRaw);
-            parent.mkdirs();
+            assert parent.mkdirs();
             File file = new File(parent.getAbsolutePath(), name);
 
             try {
@@ -109,56 +110,56 @@ public enum Command {
                             }, null, parent);
 
                             int excode = process.waitFor();
-                            return switch(excode) {
-                                case 0 -> 
-                                    channel
-                                        .sendMessage("Done compiling.")
-                                        .flatMap(m -> {
-                                            File zipfile = new File(parent.getAbsolutePath(), nameRaw + ".zip");
-                                            try(ZipOutputStream stream = new ZipOutputStream(new FileOutputStream(zipfile))) {
-                                                for(File src : parent.listFiles()) {
-                                                    if(!src.getName().endsWith(".class")) continue;
+                            if(excode == 1) {
+                                return channel
+                                    .sendMessage("Done compiling.")
+                                    .flatMap(m -> {
+                                        File zipfile = new File(parent.getAbsolutePath(), nameRaw + ".zip");
+                                        try(ZipOutputStream stream = new ZipOutputStream(new FileOutputStream(zipfile))) {
+                                            for(File src : Objects.requireNonNull(parent.listFiles())) {
+                                                if(!src.getName().endsWith(".class")) continue;
 
-                                                    try(FileInputStream in = new FileInputStream(src)) {
-                                                        ZipEntry zipEntry = new ZipEntry(src.getName());
-                                                        stream.putNextEntry(zipEntry);
+                                                try(FileInputStream in = new FileInputStream(src)) {
+                                                    ZipEntry zipEntry = new ZipEntry(src.getName());
+                                                    stream.putNextEntry(zipEntry);
 
-                                                        byte[] bytes = new byte[1024];
-                                                        int length;
-                                                        while((length = in.read(bytes)) >= 0) {
-                                                            stream.write(bytes, 0, length);
-                                                        }
+                                                    byte[] bytes = new byte[1024];
+                                                    int length;
+                                                    while((length = in.read(bytes)) >= 0) {
+                                                        stream.write(bytes, 0, length);
                                                     }
                                                 }
-                                            } catch(Throwable t) {
-                                                return messages.error(message, t);
                                             }
+                                        } catch(Throwable t) {
+                                            return messages.error(message, t);
+                                        }
 
-                                            return channel
-                                                .sendMessage("Here's your compiled `.class` file in a zipped file!")
-                                                .addFile(zipfile);
-                                        })
-                                        .flatMap(m -> {
-                                            return channel.sendMessage(String.format(
-                                                "Make sure you have Java 8 or higher installed. " +
-                                                "Open your command line, " +
-                                                "`cd` to where the compiled file is located, " +
-                                                "then run `java %s`.",
-                                                n[1]
-                                            ));
-                                        });
-
-                                default -> channel.sendMessage(String.format("Error compiling: `javac` exited with code `%d`.", excode));
-                            };
+                                        return channel
+                                            .sendMessage("Here's your compiled `.class` file in a zipped file!")
+                                            .addFile(zipfile);
+                                    })
+                                    .flatMap(m -> channel.sendMessage(String.format(
+                                        "Make sure you have Java 8 or higher installed. " +
+                                            "Open your command line, " +
+                                            "`cd` to where the compiled file is located, " +
+                                            "then run `java %s`.",
+                                        n[1]
+                                        ))
+                                    );
+                            } else {
+                                return channel.sendMessage(String.format("Error compiling: `javac` exited with code `%d`.", excode));
+                            }
                         } catch(Throwable t) {
                             return messages.error(message, t);
                         }
                     })
                     .map(msg -> {
-                        file.delete();
+                        assert file.delete();
+                        for(File fi : Objects.requireNonNull(parent.listFiles())){
+                            assert fi.delete();
+                        }
 
-                        for(File fi : parent.listFiles()) fi.delete();
-                        parent.delete();
+                        assert parent.delete();
 
                         return null;
                     })
@@ -184,6 +185,7 @@ public enum Command {
                 (opponent = messages.memberExists(message, args.get(0))) != null &&
                 (width = messages.validNumber(message, args.get(1), 3, 8)) != null
             ) {
+                assert member != null;
                 if(member.getIdLong() == opponent.getIdLong()) {
                     message
                         .getTextChannel()
@@ -224,7 +226,7 @@ public enum Command {
         public void execute(Message message, List<String> args) {
             Member member = message.getMember();
 
-            var module = tictactoe.current(message.getGuild());
+            TicTacToeModule module = tictactoe.current(message.getGuild());
             if(module != null) {
                 int[] position;
                 if((position = messages.assertMessage(
@@ -238,14 +240,17 @@ public enum Command {
                         pos[0] <= module.getWidth() && pos[0] > 0 &&
                         pos[1] <= module.getWidth() && pos[1] > 0,
 
-                    (int[] pos, Member m) -> String.format(
-                        "%s, `(%s, %s)` must be inclusively between `(1, 1)` and `(%d, %d)`.",
-                        member.getAsMention(),
-                        args.get(0), args.get(1),
-                        module.getWidth(), module.getWidth()
-                    )
+                    (int[] pos, Member m) -> {
+                        assert member != null;
+                        return String.format(
+                            "%s, `(%s, %s)` must be inclusively between `(1, 1)` and `(%d, %d)`.",
+                            member.getAsMention(),
+                            args.get(0), args.get(1),
+                            module.getWidth(), module.getWidth()
+                        );
+                    }
                 )) != null) {
-                    module.execute(message, message.getMember(), () -> new int[]{ position[0], position[1] });
+                    module.execute(message, Objects.requireNonNull(message.getMember()), () -> new int[]{ position[0], position[1] });
                 }
             }
         }
@@ -320,12 +325,14 @@ public enum Command {
             if(args.size() > 0) {
                 mention = args.get(0);
             } else {
+                assert offender != null;
                 mention = offender.getAsMention();
             }
 
             if((offended = messages.memberExists(message, mention)) != null) {
                 List<String> warnList = warns.warnings(offended);
                 if(warnList.size() > 0) {
+                    assert offender != null;
                     EmbedBuilder builder = new EmbedBuilder()
                         .setTitle(String.format("Warnings for %s#%s", offended.getEffectiveName(), offended.getUser().getDiscriminator()))
                         .setTimestamp(message.getTimeCreated())
@@ -560,7 +567,6 @@ public enum Command {
     public static final Command[] ALL = values();
 
     public static Color INFO = new Color(130, 91, 215);
-    public static Color ERROR = new Color(215, 91, 91);
 
     public final String name;
     public final String description;
