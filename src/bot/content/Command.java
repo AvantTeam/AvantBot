@@ -450,13 +450,19 @@ public enum Command {
             } else {
                 String canonical = "";
                 if(!config.isEmpty()) canonical += config + ".";
-                canonical += lastArg;
+                if(lastArg != null) canonical += lastArg;
 
                 try {
                     if(object instanceof Map map) {
                         map.put(lastArg, value);
-                    } else if(object == null || config.isEmpty()) {
+                    } else if(config.isEmpty() && lastArg != null) {
                         settings.put(lastArg, value);
+                    } else {
+                        message.getTextChannel()
+                            .sendMessage("No configurations given.")
+                            .queue();
+
+                        return;
                     }
 
                     StringBuilder builder = new StringBuilder()
