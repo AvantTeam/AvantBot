@@ -448,49 +448,38 @@ public enum Command {
                     .sendMessage(builder)
                     .queue();
             } else {
-                if(object instanceof Map map) {
-                    try {
+                String canonical = "";
+                if(!config.isEmpty()) canonical += config + ".";
+                canonical += lastArg;
+
+                try {
+                    if(object instanceof Map map) {
                         map.put(lastArg, value);
-
-                        StringBuilder builder = new StringBuilder()
-                            .append("`")
-                            .append(config)
-                            .append("` is now `")
-                            .append(value)
-                            .append("`.");
-
-                        message.getTextChannel()
-                            .sendMessage(builder)
-                            .queue();
-                    } catch(Throwable e) {
-                        StringBuilder builder = new StringBuilder()
-                            .append("Value `")
-                            .append(value)
-                            .append("` isn't assignable to `")
-                            .append(config)
-                            .append("`.");
-
-                        message.getTextChannel()
-                            .sendMessage(builder)
-                            .queue();
+                    } else if(object == null || config.isEmpty()) {
+                        settings.put(lastArg, value);
                     }
-                } else {
-                    if(config.isEmpty()) {
-                        message.getTextChannel()
-                            .sendMessage("No configuration given.")
-                            .queue();
-                    } else {
-                        StringBuilder builder = new StringBuilder()
-                            .append("No such property `")
-                            .append(lastArg)
-                            .append("` in `")
-                            .append(config)
-                            .append("`.");
 
-                        message.getTextChannel()
-                            .sendMessage(builder)
-                            .queue();
-                    }
+                    StringBuilder builder = new StringBuilder()
+                        .append("`")
+                        .append(canonical)
+                        .append("` is now `")
+                        .append(value)
+                        .append("`.");
+
+                    message.getTextChannel()
+                        .sendMessage(builder)
+                        .queue();
+                } catch(Throwable t) {
+                    StringBuilder builder = new StringBuilder()
+                        .append("Value `")
+                        .append(value)
+                        .append("` isn't assignable to `")
+                        .append(canonical)
+                        .append("`.");
+
+                    message.getTextChannel()
+                        .sendMessage(builder)
+                        .queue();
                 }
             }
         }
