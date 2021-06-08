@@ -82,20 +82,8 @@ public class Settings {
         map.putAll(mapper.readValue(file, REF_MAP));
     }
 
-    private void ensureNulls(Map<?, ?> map) {
-        Iterator<?> it = map.keySet().iterator();
-        while(it.hasNext()) {
-            Object key = it.next();
-            if(key == null) {
-                it.remove();
-            } else if(map.get(key) instanceof Map<?, ?> child) {
-                ensureNulls(child);
-            }
-        }
-    }
-
     public void save() {
-        ensureNulls(map);
+        Utilities.ensureNulls(map);
         try {
             mapper.writeValue(file, map);
         } catch(Exception e) {
