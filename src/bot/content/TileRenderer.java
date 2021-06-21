@@ -58,7 +58,8 @@ public class TileRenderer {
 
                     String name = split[0];
                     int[] size = Arrays.stream(split[1].split("\\.")).mapToInt(Integer::parseInt).toArray();
-                    String[] tileData = Arrays.copyOfRange(split, 2, split.length);
+                    String connectionData = split[2];
+                    String[] tileData = Arrays.copyOfRange(split, 3, split.length);
 
                     BufferedImage outputImage = new BufferedImage(size[0] * 16, size[1] * 16, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D graphics = outputImage.createGraphics();
@@ -86,9 +87,30 @@ public class TileRenderer {
 
                     graphics.dispose();
 
+                    String connectionString = "";
+
+                    if(connectionData.contains("U")){
+                        connectionString += "<:blank:856537369049301012>:arrow_up:\n";
+                    }
+
+                    if(connectionData.contains("L")){
+                        connectionString += ":arrow_left:";
+                    }
+
+                    if(connectionData.contains("R")){
+                        connectionString += "<:blank:856537369049301012>:arrow_right:\n";
+                    } else {
+                        connectionString += "\n";
+                    }
+
+                    if(connectionData.contains("D")){
+                        connectionString += "<:blank:856537369049301012>:arrow_down:";
+                    }
+
                     EmbedBuilder eb = new EmbedBuilder()
                         .setTitle(name, null)
-                        .setDescription("Preview:")
+                        .addField("Room Connections:", connectionString, false)
+                        .addField("Preview:", "", false)
                         .setColor(new Color(121, 239, 148))
                         .setAuthor(message.getAuthor().getName(), null, message.getAuthor().getAvatarUrl())
                         .setImage("attachment://" + outputFile.getName());
