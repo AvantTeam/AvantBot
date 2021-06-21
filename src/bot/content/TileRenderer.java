@@ -110,7 +110,6 @@ public class TileRenderer {
                     EmbedBuilder eb = new EmbedBuilder()
                         .setTitle(name, null)
                         .addField("Room Connections:", connectionString, false)
-                        .addField("Preview:", "", false)
                         .setColor(new Color(121, 239, 148))
                         .setAuthor(message.getAuthor().getName(), null, message.getAuthor().getAvatarUrl())
                         .setImage("attachment://" + outputFile.getName());
