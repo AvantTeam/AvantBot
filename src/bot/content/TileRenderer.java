@@ -95,6 +95,8 @@ public class TileRenderer {
 
                     if(connectionData.contains("L")){
                         connectionString += ":arrow_left:";
+                    } else{
+                        connectionString += "<:blank:856537369049301012>";
                     }
 
                     if(connectionData.contains("R")){
