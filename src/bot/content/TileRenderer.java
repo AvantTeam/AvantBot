@@ -58,15 +58,16 @@ public class TileRenderer {
 
                     String name = split[0];
                     int[] size = Arrays.stream(split[1].split("\\.")).mapToInt(Integer::parseInt).toArray();
+
                     String connectionData = split[2];
                     String[] tileData = Arrays.copyOfRange(split, 3, split.length);
 
                     BufferedImage outputImage = new BufferedImage(size[0] * 16, size[1] * 16, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D graphics = outputImage.createGraphics();
 
-                    for(int y = 0; y < tileData.length; y++){
+                    for(int y = 0; y < size[1]; y++){
                         String[] rows = tileData[y].split("\\.");
-                        for(int x = 0; x < rows.length; x++){
+                        for(int x = 0; x < size[0]; x++){
                             graphics.drawImage(tiles.get(rows[x]), x * 16, y * 16, null);
                         }
                     }
@@ -110,7 +111,7 @@ public class TileRenderer {
                     }
 
                     EmbedBuilder eb = new EmbedBuilder()
-                        .setTitle(name, null)
+                        .setTitle(name + (size == new int[]{25, 18} ? " (Non-vanilla sized room)" : ""), null)
                         .addField("Room Connections:", connectionString, false)
                         .setColor(new Color(121, 239, 148))
                         .setAuthor(message.getAuthor().getName(), null, message.getAuthor().getAvatarUrl())
