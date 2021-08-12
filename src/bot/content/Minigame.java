@@ -74,8 +74,8 @@ public abstract class Minigame<T extends Minigame<T, M>, M extends Minigame<T, M
 
         public RestAction<Message> notifyTurn(Message message) {
             return message.getTextChannel()
-                .sendMessage(String.format("Now is your turn, %s!\nIf you don't respond in 1 minute, the game will automatically end.", getCurrent().getAsMention()))
-                .delay(1, TimeUnit.MINUTES)
+                .sendMessage(String.format("Now is your turn, %s!\nIf you don't respond in 5 minutes, the game will automatically end.", getCurrent().getAsMention()))
+                .delay(5, TimeUnit.MINUTES)
                 .flatMap(msg -> {
                     stop(msg.getGuild());
                     return unresponsive(msg, get(current));
